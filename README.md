@@ -1,4 +1,4 @@
-# medme-skills
+# ProductTeam-skills
 
 Reusable Claude Code agent skills implementing a coordinated product-team operating system. Originally factored out of [MedMe](https://github.com/afaconti-glitch/medme) so the same role definitions can drive any future project without dragging project-specific context with them.
 
@@ -7,7 +7,7 @@ The suite contains 16 role personas plus a routing brain. Each role is a self-co
 ## What's in here
 
 ```
-medme-skills/
+ProductTeam-skills/
 ├── product-team/                     # The 16 role personas
 │   ├── product-manager.md
 │   ├── product-strategist.md
@@ -71,50 +71,58 @@ The Security Specialist is partly an internal extension of the [vibe-security-sk
 
 ## Installing into a project
 
-Pick the option that matches how the consuming project wants to evolve the skills.
+### Option A — Git submodule (recommended)
 
-### Option A — Git submodule (recommended for projects that want updates without copying)
+A submodule pins the consuming project to a specific tag, makes updates deliberate (`git submodule update --remote`), and keeps the role files in one canonical place.
 
 ```bash
 # Inside the consuming project's repo root
-git submodule add git@github.com:afaconti-glitch/medme-skills.git .claude/skills-vendor
 
-# Symlink the role files into the path Claude Code expects
-ln -s skills-vendor/product-team .claude/skills
+# 1. Add the submodule under .claude/skills-vendor
+git submodule add https://github.com/afaconti-glitch/ProductTeam-skills.git .claude/skills-vendor
 
-# Pin to a specific tag for stability
+# 2. Pin to a stable tag
 cd .claude/skills-vendor && git checkout v1.0.0 && cd -
+git add .claude/skills-vendor
+git commit -m "Pin ProductTeam-skills to v1.0.0"
 
-# Add to .gitignore (the symlink is fine, but the vendor dir contents stay in the submodule)
-echo '.claude/' >> .gitignore
+# 3. Configure .gitignore so other Claude state stays local-only
+#    but the submodule path is allowed through
+cat >> .gitignore <<'EOF'
+
+# Claude Code project-local state. The skills suite lives in the
+# tracked submodule below; everything else stays local.
+.claude/*
+!.claude/skills-vendor/
+EOF
+
+# 4. In CLAUDE.md, paste the contents of routing.md and update the
+#    skill paths to point at the vendor directory:
+#    .claude/skills/<role>.md  →  .claude/skills-vendor/product-team/<role>.md
 ```
 
-Update later with `git submodule update --remote --merge`.
+Cloning the consuming project later: `git clone --recurse-submodules <url>` (or `git submodule update --init` after a normal clone).
 
-### Option B — Copy (simplest, no upstream tracking)
+Updating to a new release of this suite: `cd .claude/skills-vendor && git fetch && git checkout v1.x.y && cd - && git commit -am "Bump ProductTeam-skills to v1.x.y"`.
+
+### Option B — Copy (simpler, no upstream tracking)
 
 ```bash
-git clone git@github.com:afaconti-glitch/medme-skills.git /tmp/medme-skills
+git clone https://github.com/afaconti-glitch/ProductTeam-skills.git /tmp/ProductTeam-skills
 mkdir -p .claude/skills
-cp /tmp/medme-skills/product-team/*.md .claude/skills/
+cp /tmp/ProductTeam-skills/product-team/*.md .claude/skills/
 echo '.claude/' >> .gitignore
 ```
 
-Updates require re-copying.
-
-### Option C — `npx skills add` (if you want this published as a public skills package)
-
-Currently this repo is private. Once published with the agentskills CLI conventions, the install command would be:
-
-```bash
-npx skills add https://github.com/afaconti-glitch/medme-skills --skill product-team
-```
-
-This requires the directory layout shown above (a top-level folder per skill suite with the role files inside) plus per-skill metadata. It works today if you point the CLI at the local clone.
+Updates require re-copying. Use this when the project will diverge from the canonical suite.
 
 ## Wiring into the consuming project's CLAUDE.md
 
-Copy the contents of [routing.md](./routing.md) into the consuming project's `CLAUDE.md` under a heading like `# Product delivery operating system`. The routing brain references `.claude/skills/<role>.md` paths — so as long as the role files are reachable at that path (via Option A's symlink or Option B's copy), Claude Code will find them.
+Copy the contents of [routing.md](./routing.md) into the consuming project's `CLAUDE.md` under a heading like `# Product delivery operating system`.
+
+If you used **Option A**, find-and-replace `.claude/skills/` → `.claude/skills-vendor/product-team/` in the pasted routing block so the paths point at the submodule.
+
+If you used **Option B**, the routing paths already match (`.claude/skills/<role>.md`).
 
 Project-specific context (stack, architecture rules, engineering conventions, working behaviour) goes **above** the routing brain in `CLAUDE.md`. The routing brain itself stays generic.
 
