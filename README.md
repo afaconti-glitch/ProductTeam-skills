@@ -25,9 +25,31 @@ ProductTeam-skills/
 │   ├── security-specialist.md
 │   ├── qa-engineer.md
 │   └── delivery-manager.md
+├── pipeline/                         # Delivery pipeline execution suite
+│   ├── run-pipeline.md               # Entry point — classify, confirm, dispatch
+│   ├── requirements-generator.md     # Lightweight coding-task intake
+│   ├── shape-task.md                 # Decompose brief into chunks
+│   ├── execute-chunk.md              # Implement one chunk safely
+│   ├── close-chunk.md                # Verify chunk closure
+│   └── cleanup-verify.md             # Post-pipeline gate sweep
 ├── routing.md                        # The routing brain (paste into your CLAUDE.md)
 └── README.md
 ```
+
+## Delivery pipeline
+
+Six skills that work as an integrated execution framework. The entry point is `run-pipeline` — it classifies work by size and routes it through the right phase composition, sharing state via `.claude/cache/pipeline.json`.
+
+| Skill | Use when |
+|---|---|
+| run-pipeline | Starting any coding task — it classifies scope (Small/Medium/Large) and dispatches to the right flow |
+| requirements-generator | Turning a rough engineering request into a confirmation-ready brief |
+| shape-task | Decomposing a confirmed brief into requirements, strategy, and execution chunks |
+| execute-chunk | Implementing one approved chunk safely with inspection, scoped edits, and targeted validation |
+| close-chunk | Verifying a completed chunk against its acceptance criteria before moving on |
+| cleanup-verify | Post-pipeline gate sweep: regenerate types, rebuild, check schema sync, run tests |
+
+See `routing.md` for the full tier matrix and when to invoke each skill directly.
 
 ## Roles at a glance
 
@@ -82,9 +104,9 @@ A submodule pins the consuming project to a specific tag, makes updates delibera
 git submodule add https://github.com/afaconti-glitch/ProductTeam-skills.git .claude/skills-vendor
 
 # 2. Pin to a stable tag
-cd .claude/skills-vendor && git checkout v1.0.0 && cd -
+cd .claude/skills-vendor && git checkout v1.1.0 && cd -
 git add .claude/skills-vendor
-git commit -m "Pin ProductTeam-skills to v1.0.0"
+git commit -m "Pin ProductTeam-skills to v1.1.0"
 
 # 3. Configure .gitignore so other Claude state stays local-only
 #    but the submodule path is allowed through
@@ -103,14 +125,15 @@ EOF
 
 Cloning the consuming project later: `git clone --recurse-submodules <url>` (or `git submodule update --init` after a normal clone).
 
-Updating to a new release of this suite: `cd .claude/skills-vendor && git fetch && git checkout v1.x.y && cd - && git commit -am "Bump ProductTeam-skills to v1.x.y"`.
+Updating to a new release of this suite: `cd .claude/skills-vendor && git fetch && git checkout v1.1.0 && cd - && git commit -am "Bump ProductTeam-skills to v1.1.0"`.
 
 ### Option B — Copy (simpler, no upstream tracking)
 
 ```bash
 git clone https://github.com/afaconti-glitch/ProductTeam-skills.git /tmp/ProductTeam-skills
-mkdir -p .claude/skills
+mkdir -p .claude/skills/pipeline
 cp /tmp/ProductTeam-skills/product-team/*.md .claude/skills/
+cp /tmp/ProductTeam-skills/pipeline/*.md .claude/skills/pipeline/
 echo '.claude/' >> .gitignore
 ```
 

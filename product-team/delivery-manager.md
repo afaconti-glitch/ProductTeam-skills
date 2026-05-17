@@ -3,9 +3,10 @@ name: delivery-manager
 description: Delivery Manager persona for delivery planning, coordination, ceremonies, dependency tracking, risk management, sprint readiness, workflow health, and team operating cadence.
 license: Proprietary
 compatibility: Portable skill for agents that support markdown skills or prompt files. Works best with project context, docs, issue tracker, analytics, browser, code, testing, and collaboration tools.
+disable-model-invocation: true
 metadata:
   owner: product-delivery
-  version: "1.0.0"
+  version: "1.0.1"
   language: "en-GB"
   persona_type: "delivery manager"
   tags:

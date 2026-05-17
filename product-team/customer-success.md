@@ -3,9 +3,10 @@ name: customer-success
 description: Customer Success persona for customer feedback, retention, adoption, account health, customer pain points, support themes, renewal risk, and voice of customer insight.
 license: Proprietary
 compatibility: Portable skill for agents that support markdown skills or prompt files. Works best with project context, docs, issue tracker, analytics, browser, code, testing, and collaboration tools.
+disable-model-invocation: true
 metadata:
   owner: product-delivery
-  version: "1.0.0"
+  version: "1.0.1"
   language: "en-GB"
   persona_type: "customer success"
   tags:

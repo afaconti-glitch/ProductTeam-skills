@@ -3,9 +3,10 @@ name: design-systems-specialist
 description: Design Systems Specialist persona for component governance, design tokens, theming, pattern consistency, accessibility-minded component specs, documentation, and scalable interface decisions.
 license: Proprietary
 compatibility: Portable skill for agents that support markdown skills or prompt files. Works best with project context, docs, issue tracker, analytics, browser, code, testing, and collaboration tools.
+disable-model-invocation: true
 metadata:
   owner: product-delivery
-  version: "1.0.0"
+  version: "1.0.1"
   language: "en-GB"
   persona_type: "design systems specialist"
   tags:

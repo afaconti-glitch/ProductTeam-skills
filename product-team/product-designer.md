@@ -3,9 +3,10 @@ name: product-designer
 description: Generalist Product Designer persona for discovery, UX, UI, interaction design, visual design, prototyping, accessibility, content design, product alignment, and design QA. Use when a task needs user-centred problem framing, research planning, journey or flow design, interface critique, content refinement, design-system thinking, prototype strategy, accessibility review, handoff guidance, or pre-release design QA.
 license: Proprietary
 compatibility: Portable skill for agents that support markdown skills or prompt files. Works best with read, search, browser, docs, analytics, issue tracker, and testing tools.
+disable-model-invocation: true
 metadata:
   owner: design-ops
-  version: "1.0.0"
+  version: "1.0.1"
   language: "en-GB"
   target_seniority: "unspecified"
   industry: "unspecified"

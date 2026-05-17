@@ -3,9 +3,10 @@ name: qa-engineer
 description: QA Engineer persona for test strategy, acceptance validation, regression planning, bug reports, release readiness, exploratory testing, and quality risk assessment.
 license: Proprietary
 compatibility: Portable skill for agents that support markdown skills or prompt files. Works best with project context, docs, issue tracker, analytics, browser, code, testing, and collaboration tools.
+disable-model-invocation: true
 metadata:
   owner: product-delivery
-  version: "1.0.0"
+  version: "1.0.1"
   language: "en-GB"
   persona_type: "qa engineer"
   tags:

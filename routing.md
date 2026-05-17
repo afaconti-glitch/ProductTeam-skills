@@ -120,6 +120,45 @@ Roles: Technical Architect, Software Engineer, DevOps Engineer, Security Special
 
 Default outputs: architecture recommendation, integration approach, operational concerns, security and privacy implications, technical risks, testing approach, rollout plan.
 
+## Delivery pipeline
+
+Use the pipeline when the work needs structured execution — not just advisory output — and you want automatic scope classification, chunk-by-chunk verification, and a final gate sweep.
+
+The entry point is always `run-pipeline`. It classifies the request, surfaces a plan for confirmation, then dispatches to the right composition of atomic skills.
+
+| Skill | File | Purpose |
+|---|---|---|
+| run-pipeline | `.claude/skills/pipeline/run-pipeline.md` | Entry point — classify, confirm, dispatch |
+| requirements-generator | `.claude/skills/pipeline/requirements-generator.md` | Lightweight intake brief for coding tasks |
+| shape-task | `.claude/skills/pipeline/shape-task.md` | Decompose brief into requirements, strategy, and chunks |
+| execute-chunk | `.claude/skills/pipeline/execute-chunk.md` | Implement one approved chunk safely |
+| close-chunk | `.claude/skills/pipeline/close-chunk.md` | Verify closure against acceptance criteria |
+| cleanup-verify | `.claude/skills/pipeline/cleanup-verify.md` | Post-pipeline gate sweep and drift check |
+
+### When to use run-pipeline
+
+- The request involves code changes (not just advisory output).
+- You want scope classification (Small / Medium / Large) before work starts.
+- The task spans more than one file or concern and benefits from chunked execution.
+- You want an automatic cleanup and verification pass at the end.
+
+### When to use individual pipeline skills directly
+
+- `shape-task` — to decompose a brief before starting, without routing.
+- `execute-chunk` — to implement one named chunk from an existing shaped plan.
+- `close-chunk` — to verify a chunk that was executed outside the pipeline.
+- `cleanup-verify` — as a standalone sanity pass after any code change.
+
+### Pipeline tiers
+
+| Tier | Scope | Flow |
+|---|---|---|
+| Small | One narrow change, single file, no schema/migration/infra/security touch | execute-chunk → targeted validation |
+| Medium | One feature slice, 1–3 chunks | requirements → shape → execute+close loop → cleanup-verify |
+| Large | Broad scope, >3 chunks, architectural or infra changes | full 9-phase flow including Explore sub-agent, Architect plan, and codex review |
+
+Shared state lives in `.claude/cache/pipeline.json`. Small flow does not touch the cache.
+
 ## Routing rules
 
 ### 1. Start by classifying the request

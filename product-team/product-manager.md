@@ -3,9 +3,10 @@ name: product-manager
 description: Product Manager persona for problem framing, prioritisation, PRDs, outcome definition, backlog shaping, stakeholder alignment, and delivery readiness. Use when a task needs product judgement, scope trade-offs, success metrics, acceptance criteria, or structured delivery work.
 license: Proprietary
 compatibility: Portable skill for agents that support markdown skills or prompt files. Works best with project context, docs, issue tracker, analytics, browser, code, testing, and collaboration tools.
+disable-model-invocation: true
 metadata:
   owner: product-delivery
-  version: "1.0.0"
+  version: "1.0.1"
   language: "en-GB"
   persona_type: "product manager"
   tags:
