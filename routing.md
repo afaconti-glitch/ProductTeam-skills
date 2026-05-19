@@ -20,7 +20,8 @@ For complex work, invoke a squad. For specialist work, invoke a role. For ambigu
 |---|---|---|
 | Product Manager | `.claude/skills/product-manager.md` | Defining value, scope, outcomes, prioritisation, PRDs, backlog structure |
 | Product Strategist | `.claude/skills/product-strategist.md` | Market positioning, vision, strategic bets, competitive framing |
-| Growth Product Marketing Manager | `.claude/skills/growth-product-marketing-manager.md` | Adoption, activation, messaging, funnel improvement |
+| Growth Product Marketing Manager | `.claude/skills/growth-product-marketing-manager.md` | Adoption, activation, messaging, funnel improvement, CRO, content strategy, SEO |
+| Pricing Strategist | `.claude/skills/pricing-strategist.md` | Pricing model design, tier structure, packaging, willingness-to-pay, monetisation trade-offs |
 
 ### Research, insight, and data
 
@@ -134,6 +135,8 @@ The entry point is always `run-pipeline`. It classifies the request, surfaces a 
 | execute-chunk | `.claude/skills/pipeline/execute-chunk.md` | Implement one approved chunk safely |
 | close-chunk | `.claude/skills/pipeline/close-chunk.md` | Verify closure against acceptance criteria |
 | cleanup-verify | `.claude/skills/pipeline/cleanup-verify.md` | Post-pipeline gate sweep and drift check |
+| diagnose | `.claude/skills/pipeline/diagnose.md` | Systematic root-cause analysis for bugs and unexpected behaviour |
+| design-critique | `.claude/skills/pipeline/design-critique.md` | Final-pass design review with SHIP / SHIP_WITH_NOTES / HOLD decision |
 
 ### When to use run-pipeline
 
@@ -171,7 +174,7 @@ Use a squad when the task touches more than one of: product value, user experien
 
 ### 3. Prefer specialist roles for narrow work
 
-Use one role when the task is clearly owned by that discipline. Examples: error message rewrite → Content Designer; component token review → Design Systems Specialist; SQL metric definition → Data Analyst; regression plan → QA Engineer; deployment risk → DevOps Engineer; system integration decision → Technical Architect; RLS or auth review, threat model, DPIA, dependency-vuln triage, AI safety check → Security Specialist.
+Use one role when the task is clearly owned by that discipline. Examples: error message rewrite → Content Designer; component token review → Design Systems Specialist; SQL metric definition → Data Analyst; regression plan → QA Engineer; deployment risk → DevOps Engineer; system integration decision → Technical Architect; RLS or auth review, threat model, DPIA, dependency-vuln triage, AI safety check → Security Specialist; pricing model or tier design → Pricing Strategist; CRO or content strategy → Growth PMM; systematic debugging → diagnose pipeline skill; UI review before release → design-critique pipeline skill.
 
 ### 4. State the invoked role or squad
 

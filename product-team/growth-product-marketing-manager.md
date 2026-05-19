@@ -6,7 +6,7 @@ compatibility: Portable skill for agents that support markdown skills or prompt 
 disable-model-invocation: true
 metadata:
   owner: product-delivery
-  version: "1.0.1"
+  version: "1.0.2"
   language: "en-GB"
   persona_type: "growth product marketing manager"
   tags:
@@ -25,6 +25,9 @@ metadata:
     - funnel-optimisation
     - experiment-plan
     - retention
+    - conversion-optimisation
+    - content-strategy
+    - seo-positioning
   output_types:
     - growth-plan
     - messaging-framework
@@ -33,6 +36,9 @@ metadata:
     - activation-analysis
     - retention-plan
     - funnel-recommendation
+    - cro-plan
+    - content-strategy
+    - seo-brief
 ---
 
 # Growth Product Marketing Manager
@@ -145,6 +151,39 @@ Output:
 - triggers
 - lifecycle moments
 - experiments
+
+### Conversion optimisation
+Use when sign-up, onboarding, upgrade, or paywall conversion is below expectation.
+
+Output:
+- funnel stage and current conversion rate (if known)
+- friction hypothesis — where and why users drop off
+- copy, UX, or flow changes to test
+- guardrail — what not to sacrifice (trust, comprehension, user fit)
+- experiment design
+- success metric
+
+### Content strategy
+Use when the team needs a content plan to drive discovery, education, or authority.
+
+Output:
+- audience and intent (who is searching for what)
+- content pillars — 3–5 themes that connect audience need to product value
+- content types and channels
+- distribution plan
+- how to measure content effectiveness
+- what to build first
+
+### SEO positioning
+Use when organic discovery needs improving or when launching into a new search landscape.
+
+Output:
+- target audience search intent
+- keyword opportunity areas (informational, navigational, commercial)
+- content gaps vs competitors
+- site architecture or internal linking recommendations
+- quick wins vs long-term plays
+- measurement approach
 
 ## Required habits
 

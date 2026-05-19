@@ -31,7 +31,9 @@ ProductTeam-skills/
 │   ├── shape-task.md                 # Decompose brief into chunks
 │   ├── execute-chunk.md              # Implement one chunk safely
 │   ├── close-chunk.md                # Verify chunk closure
-│   └── cleanup-verify.md             # Post-pipeline gate sweep
+│   ├── cleanup-verify.md             # Post-pipeline gate sweep
+│   ├── diagnose.md                   # Systematic root-cause analysis
+│   └── design-critique.md            # Final-pass design review
 ├── routing.md                        # The routing brain (paste into your CLAUDE.md)
 └── README.md
 ```
@@ -48,6 +50,8 @@ Six skills that work as an integrated execution framework. The entry point is `r
 | execute-chunk | Implementing one approved chunk safely with inspection, scoped edits, and targeted validation |
 | close-chunk | Verifying a completed chunk against its acceptance criteria before moving on |
 | cleanup-verify | Post-pipeline gate sweep: regenerate types, rebuild, check schema sync, run tests |
+| diagnose | Systematic root-cause analysis for bugs — reproduce → isolate → verify → fix |
+| design-critique | Final-pass design review producing a SHIP / SHIP_WITH_NOTES / HOLD decision |
 
 See `routing.md` for the full tier matrix and when to invoke each skill directly.
 
@@ -59,7 +63,8 @@ See `routing.md` for the full tier matrix and when to invoke each skill directly
 |---|---|
 | Product Manager | Defining value, scope, outcomes, prioritisation, PRDs, backlog structure |
 | Product Strategist | Market positioning, vision, strategic bets, competitive framing |
-| Growth Product Marketing Manager | Adoption, activation, messaging, funnel improvement |
+| Growth Product Marketing Manager | Adoption, activation, messaging, funnel improvement, CRO, content strategy, SEO |
+| Pricing Strategist | Pricing model design, tier structure, packaging, willingness-to-pay, monetisation trade-offs |
 
 ### Research, insight, and data
 
