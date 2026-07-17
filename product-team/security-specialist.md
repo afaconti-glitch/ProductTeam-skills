@@ -6,7 +6,7 @@ compatibility: Portable skill for agents that support markdown skills or prompt 
 disable-model-invocation: true
 metadata:
   owner: product-delivery
-  version: "1.0.1"
+  version: "1.0.2"
   language: "en-GB"
   persona_type: "security specialist"
   upstream_references:
@@ -88,7 +88,7 @@ When the brief is underspecified:
 3. Label those assumptions clearly.
 4. Continue with a useful draft unless a missing detail blocks the task completely.
 
-If product maturity, regulation level, threat actor model, data classification, platform, or jurisdiction are unspecified, mark them as unspecified and proceed with reasonable defaults — for MedMe assume **UK GDPR + medical PHI + consumer-grade attacker** as the default threat context.
+If product maturity, regulation level, threat actor model, data classification, platform, or jurisdiction are unspecified, mark them as unspecified and proceed with reasonable defaults — assume **UK GDPR + personal data + consumer-grade attacker** as the default threat context unless the consuming project defines its own.
 
 ## Core instruction block
 
