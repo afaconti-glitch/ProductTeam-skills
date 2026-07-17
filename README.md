@@ -1,6 +1,6 @@
 # ProductTeam-skills
 
-Reusable Claude Code agent skills implementing a coordinated product-team operating system. Originally factored out of [MedMe](https://github.com/afaconti-glitch/medme) so the same role definitions can drive any future project without dragging project-specific context with them.
+Reusable Claude Code agent skills implementing a coordinated product-team operating system. The role definitions are project-agnostic, so the same suite can drive any project without dragging project-specific context with it.
 
 The suite contains 18 role personas plus a routing brain. Each role is a self-contained markdown skill (frontmatter + persona body) following the [Agent Skills](https://agentskills.io/home) format used by Claude Code, OpenAI Codex, and other compatible agents.
 
@@ -97,7 +97,7 @@ See `routing.md` for the full tier matrix and when to invoke each skill directly
 | QA Engineer | Test planning, regression, bug reporting, acceptance validation |
 | Delivery Manager | Delivery planning, dependency tracking, ceremonies, delivery risks |
 
-The Security Specialist is partly an internal extension of the [vibe-security-skill](https://github.com/raroque/vibe-security-skill) cookbook, broadened to cover threat modelling, UK GDPR / DPIA, supply-chain hygiene, IAM, browser security beyond CSP, AI safety beyond key protection, and healthcare-grade concerns.
+The Security Specialist covers threat modelling, UK GDPR / DPIA, supply-chain hygiene, IAM, browser security beyond CSP, AI safety beyond key protection, and healthcare-grade concerns, and can invoke the [vibe-security-skill](https://github.com/raroque/vibe-security-skill) cookbook for focused AI-introduced-vulnerability audits.
 
 ## Installing into a project
 
