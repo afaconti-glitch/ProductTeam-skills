@@ -2,19 +2,21 @@
 
 Reusable Claude Code agent skills implementing a coordinated product-team operating system. Originally factored out of [MedMe](https://github.com/afaconti-glitch/medme) so the same role definitions can drive any future project without dragging project-specific context with them.
 
-The suite contains 16 role personas plus a routing brain. Each role is a self-contained markdown skill (frontmatter + persona body) following the [Agent Skills](https://agentskills.io/home) format used by Claude Code, OpenAI Codex, and other compatible agents.
+The suite contains 18 role personas plus a routing brain. Each role is a self-contained markdown skill (frontmatter + persona body) following the [Agent Skills](https://agentskills.io/home) format used by Claude Code, OpenAI Codex, and other compatible agents.
 
 ## What's in here
 
 ```
 ProductTeam-skills/
-├── product-team/                     # The 16 role personas
+├── product-team/                     # The 18 role personas
 │   ├── product-manager.md
 │   ├── product-strategist.md
 │   ├── growth-product-marketing-manager.md
+│   ├── pricing-strategist.md
 │   ├── ux-researcher.md
 │   ├── data-analyst.md
 │   ├── customer-success.md
+│   ├── storm-researcher.md
 │   ├── product-designer.md
 │   ├── content-designer.md
 │   ├── design-systems-specialist.md
@@ -73,6 +75,7 @@ See `routing.md` for the full tier matrix and when to invoke each skill directly
 | UX Researcher | Research planning, discovery, interviews, synthesis, validation |
 | Data Analyst | Metrics, dashboards, funnels, experiments, behavioural evidence |
 | Customer Success | Customer feedback, retention signals, account pain points, adoption blockers |
+| STORM Researcher | Deep, strategic, or contested research via a five-perspective scan (practitioner, academic, sceptic, incentive, historical), contradiction mapping, evidence-weighted synthesis, and adversarial peer review |
 
 ### Design and experience
 

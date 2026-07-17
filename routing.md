@@ -30,6 +30,7 @@ For complex work, invoke a squad. For specialist work, invoke a role. For ambigu
 | UX Researcher | `.claude/skills/ux-researcher.md` | Research planning, discovery, interviews, synthesis, validation |
 | Data Analyst | `.claude/skills/data-analyst.md` | Metrics, dashboards, funnels, experiments, behavioural evidence |
 | Customer Success | `.claude/skills/customer-success.md` | Customer feedback, retention signals, account pain points, adoption blockers |
+| STORM Researcher | `.claude/skills/storm-researcher.md` | Deep, strategic, controversial, or exploratory research; multi-perspective scans; contradiction analysis; blind-spot and adversarial reviews; incentive and historical-precedent analysis |
 
 ### Design and experience
 
@@ -62,7 +63,7 @@ Use when:
 - There are assumptions to test
 - The team needs to understand users, needs, context, or evidence
 
-Roles: Product Manager, Product Designer, UX Researcher, Data Analyst (where behavioural evidence is available), Customer Success (where customer feedback is relevant).
+Roles: Product Manager, Product Designer, UX Researcher, Data Analyst (where behavioural evidence is available), Customer Success (where customer feedback is relevant), STORM Researcher (where the evidence is contested, incentive-laden, or a dominant narrative needs stress-testing).
 
 Default outputs: problem statement, assumptions, evidence summary, open questions, research or validation plan, recommended next decision.
 
@@ -174,7 +175,7 @@ Use a squad when the task touches more than one of: product value, user experien
 
 ### 3. Prefer specialist roles for narrow work
 
-Use one role when the task is clearly owned by that discipline. Examples: error message rewrite → Content Designer; component token review → Design Systems Specialist; SQL metric definition → Data Analyst; regression plan → QA Engineer; deployment risk → DevOps Engineer; system integration decision → Technical Architect; RLS or auth review, threat model, DPIA, dependency-vuln triage, AI safety check → Security Specialist; pricing model or tier design → Pricing Strategist; CRO or content strategy → Growth PMM; systematic debugging → diagnose pipeline skill; UI review before release → design-critique pipeline skill.
+Use one role when the task is clearly owned by that discipline. Examples: error message rewrite → Content Designer; component token review → Design Systems Specialist; SQL metric definition → Data Analyst; regression plan → QA Engineer; deployment risk → DevOps Engineer; system integration decision → Technical Architect; RLS or auth review, threat model, DPIA, dependency-vuln triage, AI safety check → Security Specialist; deep or contested research, contradiction analysis, blind-spot review → STORM Researcher; pricing model or tier design → Pricing Strategist; CRO or content strategy → Growth PMM; systematic debugging → diagnose pipeline skill; UI review before release → design-critique pipeline skill.
 
 ### 4. State the invoked role or squad
 
