@@ -39,6 +39,7 @@ For complex work, invoke a squad. For specialist work, invoke a role. For ambigu
 | Product Designer | `.claude/skills/product-designer.md` | UX, UI, flows, interaction design, design QA, accessibility-minded design |
 | Content Designer | `.claude/skills/content-designer.md` | UX writing, labels, errors, onboarding, comprehension, content clarity |
 | Design Systems Specialist | `.claude/skills/design-systems-specialist.md` | Components, tokens, theming, pattern governance, interface consistency |
+| Motion Designer | `.claude/skills/motion-designer.md` | UI animation, transitions, micro-interactions, motion tokens and systems, reduced-motion alternatives, animation performance (INP, CLS, jank), motion audits |
 | Accessibility Specialist | `.claude/skills/accessibility-specialist.md` | WCAG-minded review, inclusive design, assistive technology risks |
 
 ### Engineering, delivery, and quality
@@ -175,7 +176,7 @@ Use a squad when the task touches more than one of: product value, user experien
 
 ### 3. Prefer specialist roles for narrow work
 
-Use one role when the task is clearly owned by that discipline. Examples: error message rewrite → Content Designer; component token review → Design Systems Specialist; SQL metric definition → Data Analyst; regression plan → QA Engineer; deployment risk → DevOps Engineer; system integration decision → Technical Architect; RLS or auth review, threat model, DPIA, dependency-vuln triage, AI safety check → Security Specialist; deep or contested research, contradiction analysis, blind-spot review → STORM Researcher; pricing model or tier design → Pricing Strategist; CRO or content strategy → Growth PMM; systematic debugging → diagnose pipeline skill; UI review before release → design-critique pipeline skill.
+Use one role when the task is clearly owned by that discipline. Examples: error message rewrite → Content Designer; component token review → Design Systems Specialist; UI animation, transition, micro-interaction, motion-token, or reduced-motion design and animation-performance review → Motion Designer; SQL metric definition → Data Analyst; regression plan → QA Engineer; deployment risk → DevOps Engineer; system integration decision → Technical Architect; RLS or auth review, threat model, DPIA, dependency-vuln triage, AI safety check → Security Specialist; deep or contested research, contradiction analysis, blind-spot review → STORM Researcher; pricing model or tier design → Pricing Strategist; CRO or content strategy → Growth PMM; systematic debugging → diagnose pipeline skill; UI review before release → design-critique pipeline skill.
 
 ### 4. State the invoked role or squad
 
