@@ -2,7 +2,7 @@
 
 Reusable Claude Code agent skills implementing a coordinated product-team operating system. The role definitions are project-agnostic, so the same suite can drive any project without dragging project-specific context with it.
 
-The suite contains 18 role personas plus a routing brain. Each role is a self-contained markdown skill (frontmatter + persona body) following the [Agent Skills](https://agentskills.io/home) format used by Claude Code, OpenAI Codex, and other compatible agents.
+The suite contains 19 role personas plus a routing brain. Each role is a self-contained markdown skill (frontmatter + persona body) following the [Agent Skills](https://agentskills.io/home) format used by Claude Code, OpenAI Codex, and other compatible agents.
 
 ## What's in here
 
@@ -20,6 +20,7 @@ ProductTeam-skills/
 │   ├── product-designer.md
 │   ├── content-designer.md
 │   ├── design-systems-specialist.md
+│   ├── motion-designer.md
 │   ├── accessibility-specialist.md
 │   ├── software-engineer.md
 │   ├── technical-architect.md
@@ -84,6 +85,7 @@ See `routing.md` for the full tier matrix and when to invoke each skill directly
 | Product Designer | UX, UI, flows, interaction design, design QA, accessibility-minded design |
 | Content Designer | UX writing, labels, errors, onboarding, comprehension, content clarity |
 | Design Systems Specialist | Components, tokens, theming, pattern governance, interface consistency |
+| Motion Designer | UI animation, transitions, micro-interactions, motion tokens/systems, reduced-motion and animation performance |
 | Accessibility Specialist | WCAG-minded review, inclusive design, assistive technology risks |
 
 ### Engineering, delivery, and quality
