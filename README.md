@@ -85,7 +85,7 @@ See `routing.md` for the full tier matrix and when to invoke each skill directly
 | Product Designer | UX, UI, flows, interaction design, design QA, accessibility-minded design |
 | Content Designer | UX writing, labels, errors, onboarding, comprehension, content clarity |
 | Design Systems Specialist | Components, tokens, theming, pattern governance, interface consistency |
-| Motion Designer | UI animation, transitions, micro-interactions, motion tokens/systems, reduced-motion and animation performance |
+| Motion Designer | UI animation, transitions, micro-interactions, expressive and brand-led motion, cursor/hover effects, ambient and particle backgrounds, motion tokens/systems, reduced-motion, animation performance, third-party motion component intake |
 | Accessibility Specialist | WCAG-minded review, inclusive design, assistive technology risks |
 
 ### Engineering, delivery, and quality
