@@ -6,7 +6,7 @@ compatibility: Portable skill for agents that support markdown skills or prompt 
 disable-model-invocation: true
 metadata:
   owner: product-delivery
-  version: "1.1.1"
+  version: "1.2.0"
   language: "en-GB"
   persona_type: "functional front-end motion designer"
   tags:
@@ -381,8 +381,9 @@ Vendored source is the common model for animated component galleries, and the ow
 5. **Animated properties** — does it move `transform`/`opacity`, or does it animate layout properties every frame?
 6. **Lifecycle** — does it clean up listeners, observers, and frame loops on unmount? Does it pause offscreen?
 7. **Dependencies and weight** — what does it pull in, and what does it cost on a mid-range mobile device on a slow network?
-8. **System fit** — can its timings and easings be replaced with your motion tokens, or does it hard-code anonymous values that will drift from the rest of the system?
-9. **Licence and provenance** — is the licence compatible with the project, and is the source trustworthy enough to run?
+8. **Foreign-framework residue** — was it authored for a different environment than yours? Components written for a design tool or another framework often arrive carrying that origin: editor-specific property metadata, layout annotations, shimmed imports that resolve to nothing. None of it breaks the build, all of it is dead weight, and it misleads the next person who reads the file. Strip it at adoption, or take the delivery path that strips it for you.
+9. **System fit** — can its timings and easings be replaced with your motion tokens, or does it hard-code anonymous values that will drift from the rest of the system?
+10. **Licence and provenance** — is the licence compatible with the project, and is the source trustworthy enough to run?
 
 **Standing rule:** a component fails intake on any gap in accessibility, lifecycle, or licence. Gaps in system fit are a fix-on-adoption task — retokenise timings at the point of adoption, because it will not happen later.
 
@@ -504,9 +505,18 @@ Reference material only — none of it substitutes for the gates in this skill. 
 **Libraries and component sources**
 - Animation libraries — evaluate against the technology hierarchy above; prefer the simplest that meets the interaction.
 - [Originkit](https://www.originkit.dev/) — a large free library of animated React/Framer components. Useful as a **reference for expressive technique families** and as an accelerator on marketing and showcase surfaces. Its components are vendored source authored Framer-first, so they arrive as code you own: run the intake checklist before adoption, and expect to add reduced-motion paths, focus visibility, lifecycle cleanup, and token alignment yourself.
-  - Delivery: copy-paste source, paste-to-Framer-canvas, or an MCP server at `https://mcp.originkit.dev/mcp` (note the separate subdomain). Setup instructions live on the [integrations page](https://www.originkit.dev/integrations?tab=mcp).
-  - Authentication is required — either add it as a custom connector and sign in (OAuth, scope `components:read`), or pass an API key as `Authorization: Bearer <key>`. For Claude Code: `claude mcp add originkit https://mcp.originkit.dev/mcp --transport http --header "Authorization: Bearer <key>"`.
-  - Exposes four tools — `list_components`, `get_component`, `search`, `fetch` — with source adapted to the requested stack (framer, react, nextjs, vite). **Stack adaptation is not review**: auto-adapted source has not been checked against your surface class, tokens, or accessibility floor. Apply the intake checklist to MCP-delivered components exactly as to pasted ones.
+  - **Authoring model.** Components are authored **Framer-first**: default export, Framer property controls, `@framerSupportedLayoutWidth/Height` layout annotations, and `framer-motion` for all animation with no CSS keyframes. This shapes what you receive on every delivery path below.
+  - **Three delivery paths, and they do not deliver the same source:**
+
+| Path | What you get | Account | Consequence for intake |
+|---|---|---|---|
+| **Copy code** | complete Framer-authored `.tsx`, bindings intact | sign-in required to copy | in React/Vite, Framer-only imports resolve to a **no-op shim**; property-control and layout-annotation metadata comes along as dead weight |
+| **Copy to Framer** | same source, pasted to canvas via Insert → Code → New Component | sign-in required to copy | property panel works immediately; the least friction and the least review |
+| **MCP** | source **adapted to the requested stack** (framer / react / nextjs / vite) — Framer bindings stripped, `"use client"` added for Next | connector sign-in, or API key | closest to clean, but adaptation is automated and unreviewed |
+
+  - **Choosing between them:** if the target is Framer, copy-to-Framer is the intended path. If the target is React, Vite, or Next, prefer MCP — it strips the Framer bindings that copy-paste leaves behind. Copying raw source into a non-Framer project means you inherit the shim and the annotations, and you own removing them.
+  - **MCP endpoint:** `https://mcp.originkit.dev/mcp` (note the separate subdomain; it is not under `www`). Tools: `list_components`, `get_component`, `search`, `fetch`. Custom connectors need **no API key** — paste the endpoint and approve the OAuth sign-in (scope `components:read`). An API key is only for editor/CLI commands: `claude mcp add originkit https://mcp.originkit.dev/mcp --transport http --header "Authorization: Bearer <key>"`. Fetches draw on a shared daily quota. Setup: [integrations page](https://www.originkit.dev/integrations?tab=mcp).
+  - **Standing caution — stack adaptation is not review.** Neither copying nor MCP adaptation checks the component against your surface class, motion tokens, or accessibility floor. Every path lands unreviewed source in your repo, so every path gets the intake checklist. The MCP path is the most frictionless and therefore the easiest to skip review on.
 - Other copy-paste animated component galleries — same intake rules apply. Treat every gallery preview as a demo on a showcase surface, which is rarely the surface you are building.
 
 Use these as vocabulary and starting points. The judgement about purpose, surface class, accessibility, and performance stays with this skill.
