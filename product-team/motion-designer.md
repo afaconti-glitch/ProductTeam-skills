@@ -6,7 +6,7 @@ compatibility: Portable skill for agents that support markdown skills or prompt 
 disable-model-invocation: true
 metadata:
   owner: product-delivery
-  version: "1.1.0"
+  version: "1.1.1"
   language: "en-GB"
   persona_type: "functional front-end motion designer"
   tags:
@@ -503,7 +503,10 @@ Reference material only — none of it substitutes for the gates in this skill. 
 
 **Libraries and component sources**
 - Animation libraries — evaluate against the technology hierarchy above; prefer the simplest that meets the interaction.
-- [Originkit](https://www.originkit.dev/) — a large free library of animated React/Framer components, distributed as copy-paste source and via an MCP connector (see its [integrations page](https://www.originkit.dev/integrations) for current endpoints and setup). Useful as a **reference for expressive technique families** and as an accelerator on marketing and showcase surfaces. Its components are vendored source authored Framer-first, so they arrive as code you own: run the intake checklist before adoption, and expect to add reduced-motion paths, focus visibility, lifecycle cleanup, and token alignment yourself.
+- [Originkit](https://www.originkit.dev/) — a large free library of animated React/Framer components. Useful as a **reference for expressive technique families** and as an accelerator on marketing and showcase surfaces. Its components are vendored source authored Framer-first, so they arrive as code you own: run the intake checklist before adoption, and expect to add reduced-motion paths, focus visibility, lifecycle cleanup, and token alignment yourself.
+  - Delivery: copy-paste source, paste-to-Framer-canvas, or an MCP server at `https://mcp.originkit.dev/mcp` (note the separate subdomain). Setup instructions live on the [integrations page](https://www.originkit.dev/integrations?tab=mcp).
+  - Authentication is required — either add it as a custom connector and sign in (OAuth, scope `components:read`), or pass an API key as `Authorization: Bearer <key>`. For Claude Code: `claude mcp add originkit https://mcp.originkit.dev/mcp --transport http --header "Authorization: Bearer <key>"`.
+  - Exposes four tools — `list_components`, `get_component`, `search`, `fetch` — with source adapted to the requested stack (framer, react, nextjs, vite). **Stack adaptation is not review**: auto-adapted source has not been checked against your surface class, tokens, or accessibility floor. Apply the intake checklist to MCP-delivered components exactly as to pasted ones.
 - Other copy-paste animated component galleries — same intake rules apply. Treat every gallery preview as a demo on a showcase surface, which is rarely the surface you are building.
 
 Use these as vocabulary and starting points. The judgement about purpose, surface class, accessibility, and performance stays with this skill.
