@@ -278,7 +278,7 @@ For Medium or Large chunks, use the full structure above.
 
 ## Cache integration
 
-Read `<cache>/pipeline.json` (contract in [`state-schema.md`](../state-schema.md)) to ground the review.
+Read `<cache>/pipeline.json` (contract in [`state-schema.md`](../../reference/state-schema.md)) to ground the review.
 
 On entry:
 

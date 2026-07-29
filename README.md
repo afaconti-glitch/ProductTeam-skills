@@ -9,10 +9,10 @@ The suite contains 19 role skills, an eight-skill delivery pipeline, and a routi
 Each role and pipeline skill is a native [Agent Skill](https://code.claude.com/docs/en/skills) — one directory containing a `SKILL.md`:
 
 ```
-product-team/product-manager/SKILL.md
-product-team/security-specialist/SKILL.md
-                              └── references/security-audit-cookbook.md
-pipeline/run-pipeline/SKILL.md
+skills/product-manager/SKILL.md
+skills/security-specialist/SKILL.md
+                         └── references/security-audit-cookbook.md
+skills/run-pipeline/SKILL.md
 ```
 
 Installed, they land at `.claude/skills/<name>/SKILL.md`, which is the documented project-skill location. So they are discovered, and each is invocable directly as `/<name>` — `/product-manager`, `/motion-designer`, `/run-pipeline`.
@@ -44,27 +44,22 @@ All 27 skills are schema-valid: names match `[a-z0-9-]{1,64}`, no reserved words
 
 ```
 ProductTeam-skills/
-├── product-team/                     # 19 role skills, one directory each
+├── .claude-plugin/
+│   ├── plugin.json                   # makes this an installable plugin
+│   └── marketplace.json              # makes the repo an addable marketplace
+├── skills/                           # all 27 skills, flat, one dir each
 │   ├── product-manager/SKILL.md
-│   ├── product-designer/SKILL.md
 │   ├── motion-designer/
 │   │   ├── SKILL.md
 │   │   └── references/motion-resources.md
 │   ├── security-specialist/
 │   │   ├── SKILL.md
 │   │   └── references/            # audit cookbook, healthcare pack
-│   └── ...                        # 14 more
-├── pipeline/                         # 8 pipeline skills + 2 shared docs
-│   ├── run-pipeline/SKILL.md         # Entry point — classify, confirm, dispatch
-│   ├── shape-task/SKILL.md
-│   ├── execute-chunk/SKILL.md
-│   ├── close-chunk/SKILL.md
-│   ├── cleanup-verify/SKILL.md
-│   ├── diagnose/SKILL.md
-│   ├── design-critique/SKILL.md
-│   ├── requirements-generator/SKILL.md
-│   ├── project-adapter.md            # shared doc, not a skill
-│   └── state-schema.md               # shared doc, not a skill
+│   ├── run-pipeline/SKILL.md         # pipeline skills sit alongside roles
+│   └── ...                        # 22 more
+├── reference/                        # shared docs, not skills
+│   ├── project-adapter.md
+│   └── state-schema.md
 ├── evals/                            # Does any of this actually help?
 │   ├── README.md                     # Design, and how to read the results
 │   ├── run.py                        # Runner — role vs no-role baseline
@@ -161,34 +156,40 @@ See `routing.md` for the full tier matrix and when to invoke each skill directly
 | QA Engineer | Test planning, regression, bug reporting, acceptance validation, durable proof of verification |
 | Delivery Manager | Delivery planning, dependency tracking, ceremonies, delivery risks |
 
-The Security Specialist covers threat modelling, UK GDPR / DPIA, supply-chain hygiene including licence and commercial boundaries, IAM, browser security beyond CSP, and AI safety. Its nine-category audit checklist and its health-data domain pack live under `product-team/references/` and load only when the task calls for them. It can also invoke the [vibe-security-skill](https://github.com/raroque/vibe-security-skill) cookbook for focused AI-introduced-vulnerability audits.
+The Security Specialist covers threat modelling, UK GDPR / DPIA, supply-chain hygiene including licence and commercial boundaries, IAM, browser security beyond CSP, and AI safety. Its nine-category audit checklist and its health-data domain pack live under that skill's `references/` and load only when the task calls for them. It can also invoke the [vibe-security-skill](https://github.com/raroque/vibe-security-skill) cookbook for focused AI-introduced-vulnerability audits.
 
 ## Installing into a project
 
-### Quickest — the install script
+### As a plugin — appears in your Skills library
+
+```
+/plugin marketplace add afaconti-glitch/ProductTeam-skills
+```
+
+Then install the `product-team` plugin. All 27 skills appear in **Settings → Skills** with an author and an update date, and become invocable as `/<name>`.
+
+This is the route to take if you want the skills *visible and managed* — a filesystem install puts them where Claude Code finds them, but the Skills panel lists plugin-provided skills, so a copied install never shows up there.
+
+The plugin carries the skills only. `routing.md` is a per-project file, so add it with the script below in any project where you want role arbitration as well.
+
+### With the install script
 
 ```bash
 git clone https://github.com/afaconti-glitch/ProductTeam-skills.git
 ./ProductTeam-skills/install.sh /path/to/your-project
 ```
 
-It copies the roles, pipeline and references into `.claude/skills/`, appends the routing brain to the project's `CLAUDE.md` **with the paths already rewritten**, updates `.gitignore`, and seeds a pipeline adapter template.
-
-Three modes:
-
 | Command | Scope |
 |---|---|
 | `install.sh /path/to/project` | That project only. Skills at `<project>/.claude/skills/`, routing added to its `CLAUDE.md`. |
-| `install.sh --submodule /path/to/project` | Same, but pinned to a tag and symlinked into `.claude/skills/` so discovery still works. |
-| `install.sh --personal` | `~/.claude/skills/` — available in **every** project as `/<name>`. Skills only; the routing brain stays per-project. |
+| `install.sh --submodule /path/to/project` | Same, pinned to a tag and symlinked into `.claude/skills/` so discovery still works. |
+| `install.sh --personal` | `~/.claude/skills/` — available in **every** project as `/<name>`. Skills only. |
 
-**The repo is the source, not an installation.** Cloning it does not make the skills visible anywhere — they live at `product-team/<name>/SKILL.md`, and Claude Code discovers skills only at `~/.claude/skills/<name>/SKILL.md` or `<project>/.claude/skills/<name>/SKILL.md`. Run the installer, or you will not see them.
+It copies the skills, appends the routing brain to `CLAUDE.md` **with paths already rewritten**, updates `.gitignore`, and seeds a pipeline adapter template. Re-running updates the routing block in place between its markers, leaving everything you wrote above it untouched.
 
-Personal mode has a real cost worth weighing: 27 skill descriptions load their metadata in every project you open, including ones with nothing to do with product work. Per-project installs keep that scoped.
+**The repo is the source, not an installation.** Cloning it makes the skills visible nowhere. Claude Code discovers them only at `~/.claude/skills/<name>/SKILL.md` or `<project>/.claude/skills/<name>/SKILL.md`; the Skills panel lists only plugin-provided skills. Pick a route above, or you will not see them.
 
-Re-running it updates the routing block in place between its markers, leaving everything you wrote above it untouched. Verified on both fresh install and update.
-
-The manual routes below do the same thing by hand; the path rewriting in step 4 is the part that most often goes wrong.
+Personal mode has a real cost: 27 skill descriptions load their metadata in every project you open, including ones with nothing to do with product work. Per-project installs keep that scoped.
 
 ### Option A — Git submodule (recommended)
 
@@ -217,7 +218,7 @@ EOF
 
 # 4. In CLAUDE.md, paste the contents of routing.md and update the
 #    skill paths to point at the vendor directory:
-#    .claude/skills/<role>.md  →  .claude/skills-vendor/product-team/<role>.md
+#    (install.sh does this for you — see the plugin and script routes above)
 ```
 
 Cloning the consuming project later: `git clone --recurse-submodules <url>` (or `git submodule update --init` after a normal clone).
@@ -229,8 +230,8 @@ Updating to a new release of this suite: `cd .claude/skills-vendor && git fetch 
 ```bash
 git clone https://github.com/afaconti-glitch/ProductTeam-skills.git /tmp/ProductTeam-skills
 mkdir -p .claude/skills/pipeline
-cp -R /tmp/ProductTeam-skills/product-team/* .claude/skills/
-cp -R /tmp/ProductTeam-skills/pipeline/*     .claude/skills/pipeline/
+cp -R /tmp/ProductTeam-skills/skills/*    .claude/skills/
+cp -R /tmp/ProductTeam-skills/reference     .claude/reference
 echo '.claude/' >> .gitignore
 ```
 
@@ -242,7 +243,7 @@ Updates require re-copying. Use this when the project will diverge from the cano
 
 Copy the contents of [routing.md](./routing.md) into the consuming project's `CLAUDE.md` under a heading like `# Product delivery operating system`.
 
-If you used **Option A**, find-and-replace `.claude/skills/` → `.claude/skills-vendor/product-team/` in the pasted routing block so the paths point at the submodule.
+If you used **Option A**, `install.sh --submodule` symlinks the vendored skills into `.claude/skills/` and rewrites the routing paths for you.
 
 If you used **Option B**, the routing paths already match (`.claude/skills/<role>.md`).
 
@@ -252,7 +253,7 @@ Project-specific context (stack, architecture rules, engineering conventions, wo
 
 - All role files use **UK English** spelling.
 - Frontmatter carries `name` and `description` (the two fields the Agent Skills schema requires) plus `license`, `compatibility`, `disable-model-invocation` and `metadata` (`version`, `language`, `persona_type`, `tags`, `intents`, `output_types`). Everything beyond `name` and `description` is this repo's own documentation convention — see the packaging note above.
-- Keep role bodies **under 500 lines**, per [Anthropic's authoring guidance](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices). Past that, move detail into `product-team/references/` and link to it from the role with a stated trigger for when to read it.
+- Keep role bodies **under 500 lines**, per [Anthropic's authoring guidance](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices). Past that, move detail into that skill's `references/` and link to it from the role with a stated trigger for when to read it.
 - Each role file ends with a `## Maintenance` section listing when to review it. Treat that as a versioning trigger — bump the role's `version` whenever you change behaviour-shaping content.
 - Role files are stable surface area: changes that alter how the role responds should be deliberate and documented in commit messages.
 

@@ -17,6 +17,20 @@
 
 set -euo pipefail
 
+# v2.x nested the pipeline skills under skills/pipeline/. v3 puts every skill
+# flat, so an older install leaves a stale subdirectory behind and the pipeline
+# skills end up present twice. Flag it rather than deleting anything in someone
+# else's tree.
+warn_stale_layout() {
+  local d="$1"
+  [[ -d "$d/pipeline" ]] || return 0
+  echo
+  echo "  NOTE: $d/pipeline/ is left over from a v2.x install." >&2
+  echo "        Every skill is flat now, so those are duplicates. Remove it:" >&2
+  echo "          rm -r '$d/pipeline'" >&2
+  echo
+}
+
 SUITE_URL="https://github.com/afaconti-glitch/ProductTeam-skills.git"
 MODE="copy"
 TARGET=""
@@ -38,12 +52,11 @@ done
 if [[ "$MODE" == "personal" ]]; then
   SUITE_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
   DEST="$HOME/.claude/skills"
-  mkdir -p "$DEST/pipeline"
-  cp -R "$SUITE_ROOT"/product-team/*  "$DEST/"
-  cp -R "$SUITE_ROOT"/pipeline/*      "$DEST/pipeline/"
+  mkdir -p "$DEST"
+  cp -R "$SUITE_ROOT"/skills/*  "$DEST/"
+  warn_stale_layout "$DEST"
   echo "Installed to $DEST"
-  echo "  $(find "$DEST" -maxdepth 2 -name SKILL.md -not -path '*/pipeline/*' | wc -l | tr -d ' ') roles,"\
-       "$(find "$DEST/pipeline" -name SKILL.md | wc -l | tr -d ' ') pipeline skills"
+  echo "  $(find "$DEST" -maxdepth 2 -name SKILL.md | wc -l | tr -d ' ') skills"
   echo
   echo "Available in every project as /<name>, e.g. /product-manager."
   echo "The routing brain is a per-project concern — run this without --personal"
@@ -86,34 +99,30 @@ if [[ "$MODE" == "submodule" ]]; then
   # Skills are discovered under .claude/skills/, so symlink each vendored
   # skill directory into place. Without this the submodule gives you routing
   # but no discovery — the files exist where nothing looks for them.
-  mkdir -p "$TARGET/.claude/skills/pipeline"
-  for d in "$TARGET"/.claude/skills-vendor/product-team/*/; do
+  mkdir -p "$TARGET/.claude/skills"
+  for d in "$TARGET"/.claude/skills-vendor/skills/*/; do
     n="$(basename "$d")"
     [[ -e "$TARGET/.claude/skills/$n" ]] || \
-      ln -s "../skills-vendor/product-team/$n" "$TARGET/.claude/skills/$n"
-  done
-  for d in "$TARGET"/.claude/skills-vendor/pipeline/*/; do
-    n="$(basename "$d")"
-    [[ -e "$TARGET/.claude/skills/pipeline/$n" ]] || \
-      ln -s "../../skills-vendor/pipeline/$n" "$TARGET/.claude/skills/pipeline/$n"
+      ln -s "../skills-vendor/skills/$n" "$TARGET/.claude/skills/$n"
   done
   echo "  symlinked skill directories into .claude/skills/ for discovery"
   SKILL_PREFIX=".claude/skills"
-  PIPE_PREFIX=".claude/skills/pipeline"
 else
-  mkdir -p "$TARGET/.claude/skills/pipeline"
+  mkdir -p "$TARGET/.claude/skills"
   # Directory-per-skill, each containing SKILL.md and any references/.
   # No trailing slash on the glob: `cp -R src/*/ dest/` copies directory
-  # *contents*, which collapses all 19 roles onto one SKILL.md.
-  cp -R "$SUITE_ROOT"/product-team/*   "$TARGET/.claude/skills/"
-  # pipeline/ holds skill directories plus two shared docs; both are wanted.
-  cp -R "$SUITE_ROOT"/pipeline/*       "$TARGET/.claude/skills/pipeline/"
-  echo "  copied $(find "$TARGET/.claude/skills" -maxdepth 2 -name SKILL.md -not -path '*/pipeline/*' | wc -l | tr -d ' ') roles,"\
-       "$(find "$TARGET/.claude/skills/pipeline" -name SKILL.md | wc -l | tr -d ' ') pipeline skills,"\
-       "$(find "$TARGET/.claude/skills" -path '*/references/*.md' | wc -l | tr -d ' ') references"
+  # *contents*, which collapses every skill onto one SKILL.md.
+  cp -R "$SUITE_ROOT"/skills/*     "$TARGET/.claude/skills/"
+  # Shared pipeline docs live outside skills/ so they are not mistaken for one.
+  mkdir -p "$TARGET/.claude/reference"
+  cp "$SUITE_ROOT"/reference/*.md  "$TARGET/.claude/reference/"
+  echo "  copied $(find "$TARGET/.claude/skills" -maxdepth 2 -name SKILL.md | wc -l | tr -d ' ') skills,"\
+       "$(find "$TARGET/.claude/skills" -path '*/references/*.md' | wc -l | tr -d ' ') references,"\
+       "$(ls "$TARGET/.claude/reference"/*.md | wc -l | tr -d ' ') shared docs"
   SKILL_PREFIX=".claude/skills"
-  PIPE_PREFIX=".claude/skills/pipeline"
 fi
+
+warn_stale_layout "$TARGET/.claude/skills"
 
 # ------------------------------------------------------- routing into CLAUDE.md
 
@@ -122,10 +131,7 @@ MARK_END="<!-- ProductTeam-skills:end -->"
 CLAUDE_MD="$TARGET/CLAUDE.md"
 
 # Rewrite the paths in routing.md to match where the files actually landed.
-ROUTING="$(sed \
-  -e "s#\`\.claude/skills/pipeline/#\`$PIPE_PREFIX/#g" \
-  -e "s#\`\.claude/skills/#\`$SKILL_PREFIX/#g" \
-  "$SUITE_ROOT/routing.md")"
+ROUTING="$(sed -e "s#\`\.claude/skills/#\`$SKILL_PREFIX/#g" "$SUITE_ROOT/routing.md")"
 
 if [[ -f "$CLAUDE_MD" ]] && grep -qF "$MARK_START" "$CLAUDE_MD"; then
   # The routing text goes via a temp file, not stdin: stdin is already taken by
@@ -168,7 +174,10 @@ ADAPTER="$TARGET/.claude/pipeline-adapter.md"
 if [[ -e "$ADAPTER" ]]; then
   echo "  pipeline adapter already present — leaving it alone"
 else
-  cp "$SUITE_ROOT/pipeline/project-adapter.md" "$ADAPTER"
+  # The template sits next to state-schema.md in the repo, but lands one level
+  # above it here, so its sibling link has to be rewritten on the way in.
+  sed 's#](\./state-schema\.md)#](./reference/state-schema.md)#g' \
+    "$SUITE_ROOT/reference/project-adapter.md" > "$ADAPTER"
   echo "  seeded .claude/pipeline-adapter.md (template — fill it in)"
 fi
 

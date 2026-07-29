@@ -131,14 +131,14 @@ The entry point is always `run-pipeline`. It classifies the request, surfaces a 
 
 | Skill | File | Purpose |
 |---|---|---|
-| run-pipeline | `.claude/skills/pipeline/run-pipeline/SKILL.md` | Entry point — classify, confirm, dispatch |
-| requirements-generator | `.claude/skills/pipeline/requirements-generator/SKILL.md` | Lightweight intake brief for coding tasks |
-| shape-task | `.claude/skills/pipeline/shape-task/SKILL.md` | Decompose brief into requirements, strategy, and chunks |
-| execute-chunk | `.claude/skills/pipeline/execute-chunk/SKILL.md` | Implement one approved chunk safely |
-| close-chunk | `.claude/skills/pipeline/close-chunk/SKILL.md` | Verify closure against acceptance criteria |
-| cleanup-verify | `.claude/skills/pipeline/cleanup-verify/SKILL.md` | Post-pipeline gate sweep and drift check |
-| diagnose | `.claude/skills/pipeline/diagnose/SKILL.md` | Systematic root-cause analysis for bugs and unexpected behaviour |
-| design-critique | `.claude/skills/pipeline/design-critique/SKILL.md` | Final-pass design review with SHIP / SHIP_WITH_NOTES / HOLD decision |
+| run-pipeline | `.claude/skills/run-pipeline/SKILL.md` | Entry point — classify, confirm, dispatch |
+| requirements-generator | `.claude/skills/requirements-generator/SKILL.md` | Lightweight intake brief for coding tasks |
+| shape-task | `.claude/skills/shape-task/SKILL.md` | Decompose brief into requirements, strategy, and chunks |
+| execute-chunk | `.claude/skills/execute-chunk/SKILL.md` | Implement one approved chunk safely |
+| close-chunk | `.claude/skills/close-chunk/SKILL.md` | Verify closure against acceptance criteria |
+| cleanup-verify | `.claude/skills/cleanup-verify/SKILL.md` | Post-pipeline gate sweep and drift check |
+| diagnose | `.claude/skills/diagnose/SKILL.md` | Systematic root-cause analysis for bugs and unexpected behaviour |
+| design-critique | `.claude/skills/design-critique/SKILL.md` | Final-pass design review with SHIP / SHIP_WITH_NOTES / HOLD decision |
 
 ### When to use run-pipeline
 
