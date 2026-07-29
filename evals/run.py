@@ -31,6 +31,14 @@ DEFAULT_MODEL = "claude-sonnet-5"
 DEFAULT_GRADER = "claude-haiku-4-5-20251001"
 TIMEOUT = 300
 
+# The baseline arm MUST have a system prompt. Passing none does not give a
+# neutral model — it gives the host's default agent prompt, complete with
+# working-directory and tool context. That made an early comparison answer
+# design questions by searching this repository for HTML tables. The baseline
+# has to differ from the role arm in role content only, not in framing.
+NEUTRAL_SYSTEM = ("You are a capable assistant helping a product team. "
+                  "Answer the request directly and usefully.")
+
 
 # ---------------------------------------------------------------- claude CLI
 
@@ -51,9 +59,17 @@ def claude(prompt, system=None, model=DEFAULT_MODEL):
     silently report a working role as broken — exactly the class of false
     result this harness exists to catch.
     """
-    cmd = ["claude", "-p", prompt, "--model", model, "--allowed-tools", ""]
-    if system:
-        cmd += ["--system-prompt", system]
+    # `--tools none` is what actually denies tools. `--allowed-tools ""` does
+    # not: an earlier version used it and eval prompts wrote real files into the
+    # repository — a PM prompt asking to "scope an AI chatbot" produced
+    # PRICING_CHATBOT_SCOPE.md on disk instead of an answer, and a design prompt
+    # spent 300s building an HTML demo instead of describing one.
+    #
+    # A system prompt is also always passed. Without one the host's default
+    # agent prompt applies, which both reaches for tools and frames every task
+    # as work in the current repository.
+    cmd = ["claude", "-p", prompt, "--model", model, "--tools", "none",
+           "--system-prompt", system or NEUTRAL_SYSTEM]
     try:
         r = subprocess.run(cmd, capture_output=True, text=True, timeout=TIMEOUT)
     except FileNotFoundError:
@@ -187,7 +203,7 @@ def run_roles(cases, args, role_file):
         entry = {"id": c["id"], "prompt": c["prompt"], "role_runs": [], "base_runs": []}
         arms = [("role_runs", role)]
         if args.baseline:
-            arms.append(("base_runs", None))   # baseline = same prompt, no role loaded
+            arms.append(("base_runs", NEUTRAL_SYSTEM))  # same framing, no role content
         tick(f"  {c['id']:<34} ")
         for label, system in arms:
             tick("[role " if label == "role_runs" else "[base ")
@@ -198,35 +214,61 @@ def run_roles(cases, args, role_file):
                     tick("!")
                     continue
                 g, gerr = grade(out, c, args.grader_model)
-                entry[label].append({"score": g["score"] if g else 0.0,
+                # score stays None when grading failed. Scoring an ungraded
+                # response as 0.0 drags the mean down and manufactures a
+                # regression — it once produced a "ROLE MADE IT WORSE" verdict
+                # from a role arm that had actually scored 1.0 twice.
+                entry[label].append({"score": g["score"] if g else None,
                                      "error": gerr, "output": out,
                                      "detail": g["detail"] if g else None})
                 tick("?" if gerr else "·")
             tick("] ")
         thr = c.get("threshold", 0.8)
-        avg = lambda rs: sum(r["score"] for r in rs) / len(rs) if rs else 0.0
+
+        def avg(rs):
+            """Mean over graded runs only. Ungraded runs are missing data."""
+            got = [r["score"] for r in rs if r["score"] is not None]
+            return sum(got) / len(got) if got else None
+
         entry["role_score"] = avg(entry["role_runs"])
         entry["base_score"] = avg(entry["base_runs"]) if args.baseline else None
+        entry["ungraded"] = (sum(1 for r in entry["role_runs"] if r["score"] is None)
+                             + sum(1 for r in entry["base_runs"] if r["score"] is None))
+        if entry["role_score"] is None or (args.baseline and entry["base_score"] is None):
+            entry["bucket"] = "UNGRADED — no verdict"
+            results.append(entry)
+            print(f"grading failed on every run — no verdict")
+            checkpoint(args, role_file, results)
+            continue
         entry["role_pass"] = entry["role_score"] >= thr
         entry["base_pass"] = (entry["base_score"] >= thr) if args.baseline else None
         entry["threshold"] = thr
         entry["bucket"] = bucket(entry["role_pass"], entry["base_pass"])
         results.append(entry)
         b = f"{entry['base_score']:.2f}" if args.baseline else " — "
-        print(f"role {entry['role_score']:.2f} | base {b}  → {entry['bucket']}")
+        warn = f"  ⚠ {entry['ungraded']} ungraded" if entry["ungraded"] else ""
+        print(f"role {entry['role_score']:.2f} | base {b}  → {entry['bucket']}{warn}")
         checkpoint(args, role_file, results)
     return results
 
 
 def checkpoint(args, role_file, results):
     """Write partial results after every case. A 20-minute run that dies at
-    minute 19 should not lose everything."""
+    minute 19 should not lose everything.
+
+    Stamped with model and start time, and cleared at the start of every run:
+    a fixed filename with no run identity makes a stale checkpoint from a
+    previous run look like live progress for the current one.
+    """
     try:
         RESULTS.mkdir(parents=True, exist_ok=True)
         (RESULTS / "_partial.json").write_text(json.dumps(
-            {"note": "in-progress run; superseded by the timestamped file on completion",
-             "suite": args.suite, "roleFile": role_file, "repeat": args.repeat,
-             "baseline": args.baseline, "results": results}, indent=2))
+            {"note": "IN-PROGRESS run; superseded by the timestamped file on completion",
+             "startedAt": args._started, "model": args.model,
+             "graderModel": args.grader_model, "suite": args.suite,
+             "roleFile": role_file, "repeat": args.repeat,
+             "baseline": args.baseline, "casesDone": len(results),
+             "results": results}, indent=2))
     except OSError:
         pass   # never let a checkpoint failure kill the run
 
@@ -299,7 +341,15 @@ def main():
                  "would be worse than none: it looks like a failing role.")
 
     started = time.time()
-    out = {"suite": args.suite, "startedAt": datetime.now(timezone.utc).isoformat(),
+    args._started = datetime.now(timezone.utc).isoformat()
+    # Clear any checkpoint from a previous run before writing our own, so a
+    # stale file can never be mistaken for this run's progress.
+    try:
+        (RESULTS / "_partial.json").unlink(missing_ok=True)
+    except OSError:
+        pass
+
+    out = {"suite": args.suite, "startedAt": args._started,
            "model": args.model, "graderModel": args.grader_model,
            "repeat": args.repeat, "baseline": args.baseline, "fixtures": []}
 
