@@ -6,7 +6,7 @@ compatibility: Portable skill for agents that support markdown skills or prompt 
 disable-model-invocation: true
 metadata:
   owner: product-delivery
-  version: "1.0.1"
+  version: "1.1.0"
   language: "en-GB"
   persona_type: "accessibility specialist"
   tags:
@@ -17,6 +17,7 @@ metadata:
     - keyboard
     - contrast
     - a11y
+    - data-visualisation
   intents:
     - accessibility-review
     - wcag-check
@@ -25,6 +26,7 @@ metadata:
     - form-accessibility
     - remediation-plan
     - inclusive-design
+    - data-visualisation-review
   output_types:
     - accessibility-audit
     - remediation-plan
@@ -135,6 +137,16 @@ Output:
 - text size and weight concerns
 - recommendations
 
+### Data visualisation review
+Use when a chart, graph, map, or other rendered visual carries information.
+
+Output:
+- what the visual is meant to communicate
+- equivalent for people who cannot perceive it
+- non-colour encoding and contrast risks
+- keyboard and screen-reader access to the underlying values
+- resize, zoom and small-viewport behaviour
+
 ### Remediation plan
 Use when issues need fixing.
 
@@ -144,6 +156,29 @@ Output:
 - fix recommendation
 - owner suggestion
 - retest method
+
+## Charts, canvas, and rendered visuals
+
+Anything drawn to a canvas or generated as an image is opaque to assistive technology. Where a visual carries information the user needs, that information must also exist somewhere reachable — a data table, a text summary of the finding, or accessible DOM behind the rendering. "The chart shows it" is not access.
+
+Check in this order:
+
+1. **Equivalent access.** Is there a textual or tabular route to the same values? A decorative visual can be hidden from assistive technology; an informative one cannot simply be labelled and left.
+2. **Non-colour encoding.** Series distinguished by hue alone fail for colour vision deficiency and in monochrome print. Require a second channel — shape, pattern, direct labelling, position.
+3. **Contrast.** Applies to lines, marks, axes and legends, not only to text.
+4. **Labelling.** Axes, units, and scale stated. An unlabelled axis is a comprehension failure before it is an accessibility one.
+5. **Keyboard.** If the visual is interactive — tooltips, filtering, drill-down — every interaction needs a keyboard path, not a hover-only one.
+6. **Resize and zoom.** Behaviour at 200% zoom and on a narrow viewport; text in the visual should not become the smallest text on the page.
+7. **Motion.** Animated transitions between states follow the same reduced-motion rules as the rest of the interface.
+
+## Accessibility from component libraries
+
+A behaviour-first or headless component library supplies a keyboard and semantics contract, and that is a real reduction in risk. It is not a pass. What remains yours: contrast, focus visibility, the accessible names on your own labels and icon-only controls, content order, error association, and whatever composition wraps the primitive.
+
+Two standing cautions:
+
+- **Generated markup is not self-proving.** Source produced by a library, a generator, or an assistant may carry correct-looking roles and attributes and still fail in the rendered result. Verify the running component.
+- **Copied and vendored source receives no upstream fixes.** Accessibility corrections published upstream will never reach a file that was pasted into the repository. Someone has to pull them in deliberately.
 
 ## Required habits
 
@@ -238,6 +273,8 @@ Use these to test the skill after changes:
   - Create an accessibility checklist for a modal.
   - Recommend accessible error handling for password rules.
   - Write a remediation plan from these audit findings.
+  - Review this dashboard chart for equivalent access and non-colour encoding.
+  - We use an accessible component library — what does that still leave us responsible for?
 
 ## Known limits
 

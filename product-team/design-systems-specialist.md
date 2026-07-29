@@ -6,7 +6,7 @@ compatibility: Portable skill for agents that support markdown skills or prompt 
 disable-model-invocation: true
 metadata:
   owner: product-delivery
-  version: "1.0.1"
+  version: "1.1.0"
   language: "en-GB"
   persona_type: "design systems specialist"
   tags:
@@ -17,6 +17,7 @@ metadata:
     - patterns
     - governance
     - documentation
+    - component-libraries
   intents:
     - component-spec
     - token-design
@@ -25,6 +26,8 @@ metadata:
     - ui-consistency
     - design-system-audit
     - handoff
+    - ui-foundation-selection
+    - component-source-intake
   output_types:
     - component-spec
     - token-map
@@ -136,6 +139,60 @@ Output:
 - remediation
 - adoption plan
 
+### UI foundation selection
+Use when choosing what the component layer is built on.
+
+Output:
+- behaviours actually required
+- recommended foundation and integration model
+- what the system still has to supply itself
+- accessibility ownership split
+- migration and exit cost
+
+### Component source intake
+Use when component source arrives from a registry, gallery, generator or another team.
+
+Output:
+- verdict per intake item
+- system-fit gaps and the retokenising needed
+- provenance record
+- adopt / adopt-with-changes / reject
+
+## Choosing and governing a component foundation
+
+### Foundations differ by what they hand over
+
+A component library is not one kind of decision. Establish which of these is on the table before comparing candidates, because they transfer different work and different ownership.
+
+| Foundation | Hands you | You still supply | Best when |
+|---|---|---|---|
+| **Headless primitives** | keyboard contract, focus management, ARIA semantics, interaction state | all visual design, tokens, composition | the system has its own visual language and cannot accept someone else's |
+| **Styled suite** | components plus a theming and visual contract | product-specific composition and content rules | speed matters more than visual distinctiveness, and the suite's design language is acceptable |
+| **Copy-in registry** | source files written into your repository | everything after the first commit, forever | you want ownership and are willing to pay for it |
+| **Standards-based custom elements** | framework-portable components | framework integration and hydration behaviour | components must be reused across more than one framework |
+
+Two rules follow from the table. Do not adopt a styled suite and then fight its visual architecture with blanket overrides — that is the most expensive way to end up with neither system. And do not choose headless primitives without confirming the team has the token layer and design capacity to finish them; a headless foundation is an unfinished component library by design.
+
+### Accessibility ownership is split, not delegated
+
+A behaviour-first primitive gives you a keyboard and semantics contract, which is a genuine reduction in risk. It does not give you an accessible component. Contrast, focus visibility, accessible names on your labels, content order, and the composition you wrap around it all remain yours, and generated or adapted markup proves nothing until it is exercised. Verify the rendered component; do not accept the library's reputation as evidence.
+
+### Copy-in governance
+
+Copied source is the one model where the design system silently becomes a fork. Require:
+
+- **Provenance on every item** — upstream source, item name, version or commit, licence, retrieval date. Once source is in the repository, nothing else records where it came from.
+- **A reviewable diff before it lands.** Registry items are executable supply-chain inputs that write files and can add dependencies. Review them as code, not as assets.
+- **A recorded divergence.** When a local file deliberately differs from the upstream item, note why. Undocumented drift makes future comparison against upstream impossible, which is how copy-in systems ossify.
+- **Retokenising at the point of adoption.** Replace hard-coded colours, spacing, radii and timings with system tokens when the component arrives. It will not happen later.
+- **A named owner.** Upstream accessibility and security fixes will not reach this file. Someone has to decide whether to pull them in.
+
+### Retrieval surfaces worth preferring
+
+When gathering component or token facts, prefer structured sources over rendered documentation or screenshots: a registry's JSON schema and CLI over its marketing site; the team's own component index, stories and prop metadata over recollection of what the system contains; per-page Markdown or an `llms.txt` index where the project publishes one; exported type declarations for the installed version.
+
+The team's own implemented components outrank any upstream catalogue. Check what already exists before specifying something new — the most common design-system failure is not a bad component, it is a third one that does the same job.
+
 ## Required habits
 
 For substantial tasks, usually include:
@@ -161,7 +218,8 @@ For generative tasks:
 
 If tools are available, prefer this order:
   - design system docs
-  - component library
+  - the team's implemented components, stories and prop metadata
+  - component library source for the installed version
   - token files
   - product screens
   - accessibility guidelines
@@ -220,6 +278,9 @@ Before finalising, silently check:
   - Can engineering implement this?
   - Is naming clear and durable?
   - Are migration risks noted?
+  - Does an existing component already do this job?
+  - For adopted source: is provenance recorded, and are timings and values retokenised?
+  - Is it clear which parts of accessibility the foundation covers and which remain ours?
 
 ## Regression prompts
 
@@ -229,6 +290,9 @@ Use these to test the skill after changes:
   - Audit this screen for design system drift.
   - Define states for a button component.
   - Recommend whether to create a new component or reuse an existing one.
+  - Recommend a foundation for a bespoke component layer and state what we still have to build.
+  - Run intake on this copied component and give an adopt / adopt-with-changes / reject verdict.
+  - We are on a styled suite but the brand has diverged — advise.
 
 ## Known limits
 
@@ -247,6 +311,8 @@ Review when:
   - token architecture changes
   - accessibility standards change
   - repeated one-off UI patterns appear
+  - the UI foundation, its licence, or its delivery model changes
+  - copied component source drifts from upstream without a recorded reason
 
 Update:
 - version

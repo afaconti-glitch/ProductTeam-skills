@@ -6,7 +6,7 @@ compatibility: Portable skill for agents that support markdown skills or prompt 
 disable-model-invocation: true
 metadata:
   owner: product-delivery
-  version: "1.0.1"
+  version: "1.1.0"
   language: "en-GB"
   persona_type: "qa engineer"
   tags:
@@ -147,6 +147,19 @@ Output:
 - defects
 - coverage gaps
 
+## Proof has to outlive the session
+
+An interactive check — a browser walkthrough, a manual pass, a tool-driven exploration — establishes that something worked once, for whoever was watching. It does not protect the behaviour tomorrow.
+
+- Exploration finds problems; a committed test keeps them found. Where a behaviour matters enough to verify, convert the check into a test that runs in CI rather than leaving the only evidence in a transcript, a screenshot, or someone's memory.
+- Verify against the version actually deployed or installed. A pass recorded against a different build proves nothing about the one shipping.
+- Record the build, environment and data state alongside any result. An unattributed pass is not reproducible, and an unreproducible pass is not evidence.
+- Automated scans and generated tests establish a floor, not coverage. Say what they did not exercise.
+
+### Third-party and generated code
+
+Code that arrived from a library, a registry, a gallery or a generator was not written for this product and carries no assumption of having been tested here. Give it the same treatment as new code: the states nobody demos — loading, empty, error, overflow, long content, slow network — plus keyboard access, narrow and wide viewports, and behaviour when the component is used more than once on a page.
+
 ## Required habits
 
 For substantial tasks, usually include:
@@ -232,6 +245,7 @@ Before finalising, silently check:
   - Is severity justified?
   - Is release risk clear?
   - Can a developer reproduce the issue?
+  - Is the evidence durable and attributed to a build, or does it only exist in this session?
 
 ## Regression prompts
 
@@ -241,6 +255,8 @@ Use these to test the skill after changes:
   - Write a bug report from this issue description.
   - Create a regression checklist for checkout.
   - Assess whether this feature is ready to release.
+  - We verified this by clicking through it — turn that into something that keeps holding.
+  - Plan the test pass for a component we copied in from an external library.
 
 ## Known limits
 

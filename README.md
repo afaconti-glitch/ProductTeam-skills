@@ -84,19 +84,19 @@ See `routing.md` for the full tier matrix and when to invoke each skill directly
 |---|---|
 | Product Designer | UX, UI, flows, interaction design, design QA, accessibility-minded design |
 | Content Designer | UX writing, labels, errors, onboarding, comprehension, content clarity |
-| Design Systems Specialist | Components, tokens, theming, pattern governance, interface consistency |
+| Design Systems Specialist | Components, tokens, theming, pattern governance, interface consistency, UI foundation selection, component source intake |
 | Motion Designer | UI animation, transitions, micro-interactions, expressive and brand-led motion, cursor/hover effects, ambient and particle backgrounds, motion tokens/systems, reduced-motion, animation performance, third-party motion component intake |
-| Accessibility Specialist | WCAG-minded review, inclusive design, assistive technology risks |
+| Accessibility Specialist | WCAG-minded review, inclusive design, assistive technology risks, data-visualisation accessibility |
 
 ### Engineering, delivery, and quality
 
 | Role | Use when |
 |---|---|
-| Software Engineer | Implementation, code, feasibility, technical trade-offs |
-| Technical Architect | System design, integration strategy, scalability, platform decisions |
+| Software Engineer | Implementation, code, feasibility, technical trade-offs, library selection, version-matched API use |
+| Technical Architect | System design, integration strategy, scalability, platform decisions, standing-dependency evaluation |
 | DevOps Engineer | CI/CD, environments, deployment, observability, release reliability |
-| Security Specialist | Threat modelling, security audits, RLS / auth review, privacy and DPIA, supply-chain audit, AI/LLM safety, incident readiness, vulnerability triage |
-| QA Engineer | Test planning, regression, bug reporting, acceptance validation |
+| Security Specialist | Threat modelling, security audits, RLS / auth review, privacy and DPIA, supply-chain audit including licence boundaries and tool servers, AI/LLM safety, incident readiness, vulnerability triage |
+| QA Engineer | Test planning, regression, bug reporting, acceptance validation, durable proof of verification |
 | Delivery Manager | Delivery planning, dependency tracking, ceremonies, delivery risks |
 
 The Security Specialist covers threat modelling, UK GDPR / DPIA, supply-chain hygiene, IAM, browser security beyond CSP, AI safety beyond key protection, and healthcare-grade concerns, and can invoke the [vibe-security-skill](https://github.com/raroque/vibe-security-skill) cookbook for focused AI-introduced-vulnerability audits.
