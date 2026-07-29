@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/ant/Downloads/skills/run-pipeline/**)",
+      "Read(//Users/ant/Downloads/skills/close-chunk/**)",
+      "Read(//Users/ant/Downloads/skills/requirements-generator/**)",
+      "Read(//Users/ant/Downloads/skills/execute-chunk/**)",
+      "Read(//Users/ant/Downloads/skills/cleanup-verify/**)",
+      "WebFetch(domain:www.skills.sh)",
+      "WebFetch(domain:github.com)"
+    ]
+  }
+}

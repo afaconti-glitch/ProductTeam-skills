@@ -1,6 +1,6 @@
 # Motion resources
 
-Reference for [`motion-designer`](../motion-designer.md). Read this when you need to name a standard, choose a library, or run intake on a third-party animated component.
+Reference for [`motion-designer`](../SKILL.md). Read this when you need to name a standard, choose a library, or run intake on a third-party animated component.
 
 Reference material only — none of it substitutes for the gates in the skill. Verify anything time-sensitive at the source rather than trusting a value recalled here. Library and vendor detail ages fastest; treat the delivery-path table below as a snapshot to re-check, not a durable fact.
 

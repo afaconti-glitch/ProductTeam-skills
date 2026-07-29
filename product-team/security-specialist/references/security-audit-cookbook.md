@@ -1,6 +1,6 @@
 # Security audit cookbook
 
-Reference for [`security-specialist`](../security-specialist.md). Read this when running a security audit, a secure design review, or a PR review for introduced vulnerabilities.
+Reference for [`security-specialist`](../SKILL.md). Read this when running a security audit, a secure design review, or a PR review for introduced vulnerabilities.
 
 Treat these as a checklist, not a script — skip what doesn't apply, deepen where the project is exposed. Stack-specific examples name common platforms; translate them to whatever the project actually uses rather than assuming the named one.
 

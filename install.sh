@@ -60,16 +60,34 @@ if [[ "$MODE" == "submodule" ]]; then
       echo "  pinned to $LATEST_TAG"
     fi
   fi
-  SKILL_PREFIX=".claude/skills-vendor/product-team"
-  PIPE_PREFIX=".claude/skills-vendor/pipeline"
+  # Skills are discovered under .claude/skills/, so symlink each vendored
+  # skill directory into place. Without this the submodule gives you routing
+  # but no discovery — the files exist where nothing looks for them.
+  mkdir -p "$TARGET/.claude/skills/pipeline"
+  for d in "$TARGET"/.claude/skills-vendor/product-team/*/; do
+    n="$(basename "$d")"
+    [[ -e "$TARGET/.claude/skills/$n" ]] || \
+      ln -s "../skills-vendor/product-team/$n" "$TARGET/.claude/skills/$n"
+  done
+  for d in "$TARGET"/.claude/skills-vendor/pipeline/*/; do
+    n="$(basename "$d")"
+    [[ -e "$TARGET/.claude/skills/pipeline/$n" ]] || \
+      ln -s "../../skills-vendor/pipeline/$n" "$TARGET/.claude/skills/pipeline/$n"
+  done
+  echo "  symlinked skill directories into .claude/skills/ for discovery"
+  SKILL_PREFIX=".claude/skills"
+  PIPE_PREFIX=".claude/skills/pipeline"
 else
-  mkdir -p "$TARGET/.claude/skills/pipeline" "$TARGET/.claude/skills/references"
-  cp "$SUITE_ROOT"/product-team/*.md              "$TARGET/.claude/skills/"
-  cp "$SUITE_ROOT"/product-team/references/*.md   "$TARGET/.claude/skills/references/"
-  cp "$SUITE_ROOT"/pipeline/*.md                  "$TARGET/.claude/skills/pipeline/"
-  echo "  copied $(ls "$SUITE_ROOT"/product-team/*.md | wc -l | tr -d ' ') roles,"\
-       "$(ls "$SUITE_ROOT"/pipeline/*.md | wc -l | tr -d ' ') pipeline skills,"\
-       "$(ls "$SUITE_ROOT"/product-team/references/*.md | wc -l | tr -d ' ') references"
+  mkdir -p "$TARGET/.claude/skills/pipeline"
+  # Directory-per-skill, each containing SKILL.md and any references/.
+  # No trailing slash on the glob: `cp -R src/*/ dest/` copies directory
+  # *contents*, which collapses all 19 roles onto one SKILL.md.
+  cp -R "$SUITE_ROOT"/product-team/*   "$TARGET/.claude/skills/"
+  # pipeline/ holds skill directories plus two shared docs; both are wanted.
+  cp -R "$SUITE_ROOT"/pipeline/*       "$TARGET/.claude/skills/pipeline/"
+  echo "  copied $(find "$TARGET/.claude/skills" -maxdepth 2 -name SKILL.md -not -path '*/pipeline/*' | wc -l | tr -d ' ') roles,"\
+       "$(find "$TARGET/.claude/skills/pipeline" -name SKILL.md | wc -l | tr -d ' ') pipeline skills,"\
+       "$(find "$TARGET/.claude/skills" -path '*/references/*.md' | wc -l | tr -d ' ') references"
   SKILL_PREFIX=".claude/skills"
   PIPE_PREFIX=".claude/skills/pipeline"
 fi

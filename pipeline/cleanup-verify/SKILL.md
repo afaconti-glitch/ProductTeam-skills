@@ -28,7 +28,7 @@ If any step reveals drift the pipeline should have committed, stop and report it
 
 ## Step 0 — Resolve the project
 
-Read [`project-adapter.md`](./project-adapter.md) at `.claude/pipeline-adapter.md`. It declares the commands, gate chain, generated artefacts, state location and integrations for this repository.
+Read [`project-adapter.md`](../project-adapter.md) at `.claude/pipeline-adapter.md`. It declares the commands, gate chain, generated artefacts, state location and integrations for this repository.
 
 **If no adapter exists,** discover them using the fallback order in that document (repository instructions → manifests → CI config → lockfile). State what you discovered and where it came from before running anything.
 
@@ -53,7 +53,7 @@ Run in order. Do not skip a step without a stated reason.
 
 ### 0. Honour a fresh gate stamp
 
-Read `<cache>/last-gate.json` (see [`state-schema.md`](./state-schema.md)). If `success === true`, `scope === "full"`, and `at` is within `state.gateStampTtlSeconds`, the full chain has just run end-to-end:
+Read `<cache>/last-gate.json` (see [`state-schema.md`](../state-schema.md)). If `success === true`, `scope === "full"`, and `at` is within `state.gateStampTtlSeconds`, the full chain has just run end-to-end:
 
 - **Skip steps 5 and 6.** They are exactly what that chain already ran; repeating them costs minutes and produces no new signal.
 - Still run steps 1–4 — artefact verification is not covered by a generic gate run.
@@ -120,7 +120,7 @@ Stamp only if **all** of:
 - every test in step 6 passed, and
 - there is no unreconciled drift.
 
-Write `<cache>/last-gate.json` per [`state-schema.md`](./state-schema.md).
+Write `<cache>/last-gate.json` per [`state-schema.md`](../state-schema.md).
 
 Choose `scope` honestly:
 
@@ -188,7 +188,7 @@ Verdict is one of:
 
 ## State integration
 
-State is optional — see [`state-schema.md`](./state-schema.md). If unavailable or unwritable, report in chat and skip persistence. Do not fail the skill.
+State is optional — see [`state-schema.md`](../state-schema.md). If unavailable or unwritable, report in chat and skip persistence. Do not fail the skill.
 
 Read `<cache>/pipeline.json` at entry to:
 
