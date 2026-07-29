@@ -172,7 +172,19 @@ git clone https://github.com/afaconti-glitch/ProductTeam-skills.git
 ./ProductTeam-skills/install.sh /path/to/your-project
 ```
 
-It copies the roles, pipeline and references into `.claude/skills/`, appends the routing brain to the project's `CLAUDE.md` **with the paths already rewritten**, updates `.gitignore`, and seeds a pipeline adapter template. Add `--submodule` to pin to a tag instead of copying.
+It copies the roles, pipeline and references into `.claude/skills/`, appends the routing brain to the project's `CLAUDE.md` **with the paths already rewritten**, updates `.gitignore`, and seeds a pipeline adapter template.
+
+Three modes:
+
+| Command | Scope |
+|---|---|
+| `install.sh /path/to/project` | That project only. Skills at `<project>/.claude/skills/`, routing added to its `CLAUDE.md`. |
+| `install.sh --submodule /path/to/project` | Same, but pinned to a tag and symlinked into `.claude/skills/` so discovery still works. |
+| `install.sh --personal` | `~/.claude/skills/` — available in **every** project as `/<name>`. Skills only; the routing brain stays per-project. |
+
+**The repo is the source, not an installation.** Cloning it does not make the skills visible anywhere — they live at `product-team/<name>/SKILL.md`, and Claude Code discovers skills only at `~/.claude/skills/<name>/SKILL.md` or `<project>/.claude/skills/<name>/SKILL.md`. Run the installer, or you will not see them.
+
+Personal mode has a real cost worth weighing: 27 skill descriptions load their metadata in every project you open, including ones with nothing to do with product work. Per-project installs keep that scoped.
 
 Re-running it updates the routing block in place between its markers, leaving everything you wrote above it untouched. Verified on both fresh install and update.
 

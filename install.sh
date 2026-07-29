@@ -2,16 +2,18 @@
 #
 # Install ProductTeam-skills into a consuming project.
 #
-#   ./install.sh                 # from inside a clone, installs into $PWD's parent project
-#   ./install.sh /path/to/repo   # explicit target
-#   ./install.sh --submodule /path/to/repo
+#   ./install.sh /path/to/repo              # into one project (default)
+#   ./install.sh --submodule /path/to/repo  # pinned to a tag, symlinked for discovery
+#   ./install.sh --personal                 # into ~/.claude/skills, every project
 #
-# Copy mode (default) writes the role, pipeline and reference files into
-# .claude/skills/ and leaves the project free to diverge. Submodule mode pins
-# the suite to a tag and keeps updates deliberate.
+# Project modes place the skills under the project's .claude/skills/ and append
+# the routing brain to its CLAUDE.md with paths already rewritten — the step
+# most likely to be got wrong by hand. Copy mode leaves the project free to
+# diverge; submodule mode keeps updates deliberate.
 #
-# Either way the routing brain is appended to the project's CLAUDE.md with its
-# paths already rewritten — the step most likely to be got wrong by hand.
+# Personal mode installs the skills only. They become available in every
+# project as /<name>, but their metadata also loads in every project, including
+# ones with nothing to do with product work. The routing brain stays per-project.
 
 set -euo pipefail
 
@@ -23,10 +25,31 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --submodule) MODE="submodule"; shift ;;
     --copy)      MODE="copy"; shift ;;
+    --personal)  MODE="personal"; shift ;;
     -h|--help)   sed -n '2,16p' "$0" | sed 's/^# \?//'; exit 0 ;;
     *)           TARGET="$1"; shift ;;
   esac
 done
+
+# Personal install: skills only, into ~/.claude/skills/, available in every
+# project. No CLAUDE.md, .gitignore or adapter — those are project concerns.
+# Note the cost: personal skills load their metadata in every project you open,
+# including ones with nothing to do with product work.
+if [[ "$MODE" == "personal" ]]; then
+  SUITE_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  DEST="$HOME/.claude/skills"
+  mkdir -p "$DEST/pipeline"
+  cp -R "$SUITE_ROOT"/product-team/*  "$DEST/"
+  cp -R "$SUITE_ROOT"/pipeline/*      "$DEST/pipeline/"
+  echo "Installed to $DEST"
+  echo "  $(find "$DEST" -maxdepth 2 -name SKILL.md -not -path '*/pipeline/*' | wc -l | tr -d ' ') roles,"\
+       "$(find "$DEST/pipeline" -name SKILL.md | wc -l | tr -d ' ') pipeline skills"
+  echo
+  echo "Available in every project as /<name>, e.g. /product-manager."
+  echo "The routing brain is a per-project concern — run this without --personal"
+  echo "in a project to add it to that project's CLAUDE.md."
+  exit 0
+fi
 
 SUITE_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TARGET="${TARGET:-$PWD}"
