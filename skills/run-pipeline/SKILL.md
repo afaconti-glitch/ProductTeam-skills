@@ -30,8 +30,8 @@ You compose atomic skills; you do not re-implement them. The atomic skills are:
 
 Two documents define everything project-specific. Read them before Phase C:
 
-- [`project-adapter.md`](../project-adapter.md) — commands, gate chain, risky paths, host integrations. Resolved from `.claude/pipeline-adapter.md`, or discovered from the repository when absent.
-- [`state-schema.md`](../state-schema.md) — the shared state contract, and how to degrade when state is unavailable.
+- [`project-adapter.md`](../../reference/project-adapter.md) — commands, gate chain, risky paths, host integrations. Resolved from `.claude/pipeline-adapter.md`, or discovered from the repository when absent.
+- [`state-schema.md`](../../reference/state-schema.md) — the shared state contract, and how to degrade when state is unavailable.
 
 Below, `<lint>`, `<test.affected>`, `<test>` and similar are placeholders for commands you resolved from the adapter. They are never literal. `<cache>/` is the state directory the adapter declares.
 
@@ -199,7 +199,7 @@ Rules across all tiers:
 
 # State lifecycle
 
-You own `<cache>/pipeline.json` for Medium and Large flows; Small flow does not touch it. The full contract, including how to degrade when state is unavailable, is in [`state-schema.md`](../state-schema.md).
+You own `<cache>/pipeline.json` for Medium and Large flows; Small flow does not touch it. The full contract, including how to degrade when state is unavailable, is in [`state-schema.md`](../../reference/state-schema.md).
 
 | Phase | Field writes |
 | --- | --- |
