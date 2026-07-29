@@ -26,7 +26,14 @@ You compose atomic skills; you do not re-implement them. The atomic skills are:
 - [`shape-task`](./shape-task.md) — brief → requirements + strategy + chunks.
 - [`execute-chunk`](./execute-chunk.md) — implement one chunk safely.
 - [`close-chunk`](./close-chunk.md) — verify one chunk's closure decision.
-- [`cleanup-verify`](./cleanup-verify.md) — post-run contracts/build/test sweep.
+- [`cleanup-verify`](./cleanup-verify.md) — post-run regenerate/build/gate/test sweep.
+
+Two documents define everything project-specific. Read them before Phase C:
+
+- [`project-adapter.md`](./project-adapter.md) — commands, gate chain, risky paths, host integrations. Resolved from `.claude/pipeline-adapter.md`, or discovered from the repository when absent.
+- [`state-schema.md`](./state-schema.md) — the shared state contract, and how to degrade when state is unavailable.
+
+Below, `<lint>`, `<test.affected>`, `<test>` and similar are placeholders for commands you resolved from the adapter. They are never literal. `<cache>/` is the state directory the adapter declares.
 
 When invoked with arguments, treat `$ARGUMENTS` as the raw task request.
 
@@ -64,12 +71,14 @@ Read the raw request and assign a tier: **Small**, **Medium**, or **Large**. Use
 
 Any **one** of these promotes the tier by one level (Small → Medium, Medium → Large):
 
-- Change touches `packages/contracts/src/schemas/*` or `workflows/*.json`.
-- Change adds or modifies a SQL migration / schema table / Drizzle entity.
-- Change touches Terraform, Dockerfile(s), `docker-compose*.yml`, or `.env.example`.
-- Change is in auth / security / billing / RBAC code paths.
+- Change touches a path listed under `paths.risk` in the project adapter.
+- Change adds or modifies a database migration, schema table, or ORM entity.
+- Change touches infrastructure as code, container definitions, or environment templates.
+- Change is in auth / security / billing / permissions code paths.
 - Prompt explicitly chains multiple discrete asks ("X **and also** Y", numbered lists of unrelated items).
 - Honest estimate is >3 chunks regardless of whether the prompt looks small.
+
+The last four are pipeline defaults and apply whether or not an adapter exists. `paths.risk` extends them with project-specific globs — generated registries, contract schemas, workflow definitions, anything whose breakage is expensive here.
 
 If a Small change has a UI surface (frontend file edits visible to users), bump to Medium so the brief covers a11y / edge cases.
 
@@ -93,14 +102,14 @@ Always emit this block, then stop and wait for the user. Never proceed past this
 **Skipped vs full pipeline:**
 - <bullet per phase NOT running for this tier — be explicit so the user can opt back in>
 
-**Cache:** <skipped | uses .claude/cache/pipeline.json>
-**Codex review:** <skipped | mandatory | opt-in>
+**State:** <skipped | uses <cache>/pipeline.json | unavailable — running without persistence>
+**Independent review:** <not configured | skipped | mandatory | opt-in>
 
 **Confirm:**
 - `go` / `approve` / `proceed` — run as classified.
 - `small` / `medium` / `large` — explicit tier override.
-- `+codex` / `-codex` — toggle codex review.
-- `+explore` / `-explore` — toggle Explore sub-agent (Medium only; Large always uses it).
+- `+review` / `-review` — toggle independent review (only offered if the adapter declares one).
+- `+explore` / `-explore` — toggle the inspection sub-agent (Medium only; Large always uses it, where one is available).
 - Free-text correction (e.g. "actually also touch the migration").
 ```
 
@@ -114,28 +123,28 @@ If the user says nothing or asks a question, treat it as a question and answer; 
 
 For requests classified Small (one narrow change, no contract/schema/migration/infra/security touch, no UI surface).
 
-1. **Skip the cache.** Do not write to `.claude/cache/pipeline.json`. Small fixes shouldn't pollute the pipeline state.
-2. **Read `.claude/cache/last-gate.json`.** If `scope: "full", success: true, at` is within 240 s, you may inherit that stamp; otherwise plan to validate at the end.
-3. **Inspect minimally** — Read or Grep the immediately relevant files. Don't dispatch the Explore sub-agent for Small work.
+1. **Skip the state file.** Do not write to `<cache>/pipeline.json`. Small fixes shouldn't pollute pipeline state.
+2. **Read `<cache>/last-gate.json`.** If `scope: "full", success: true, at` is within 240 s, you may inherit that stamp; otherwise plan to validate at the end.
+3. **Inspect minimally** — Read or Grep the immediately relevant files. Don't dispatch an inspection sub-agent for Small work.
 4. **Apply the change** following [`execute-chunk`](./execute-chunk.md) — same scope-guard rules apply. If mid-flight the change reveals a bigger surface than declared, **stop**, return to Phase B, and re-classify (likely Medium). Do not silently widen.
-5. **Validate, narrowly:** `pnpm lint` (changed scope) + the most-affected test file invoked directly via `tsx`. Skip full `pnpm check` and full `pnpm test` unless the change touched contracts/schemas/workflows — those gates always run when their scope is touched.
-6. **Report a 5-line summary**: what changed, files touched, validation outcome, any residual risk. No multi-section report; no codex review; no cleanup-verify.
+5. **Validate, narrowly:** scoped `<lint>` plus the most-affected test invoked directly. Skip the full gate chain unless the change touched a `paths.risk` glob — those gates always run when their scope is touched.
+6. **Report a 5-line summary**: what changed, files touched, validation outcome, any residual risk. No multi-section report; no independent review; no cleanup-verify.
 
-If the change touched any file that triggers a bump-up rule (`packages/contracts/src/schemas/*`, `workflows/*.json`, SQL, Terraform, .env.example, auth/security paths), Small was the wrong tier — stop, re-surface Medium, and dispatch from there.
+If the change touched any file that triggers a bump-up rule, Small was the wrong tier — stop, re-surface Medium, and dispatch from there.
 
 ## C-Medium — Medium flow
 
 For requests classified Medium (one feature slice, 1–3 chunks).
 
-1. **Initialise the cache.** Read `.claude/cache/pipeline.json`; if a prior run is `executing`/`shaping` and on a different task, warn the user and ask whether to resume, discard, or append. Otherwise reset: `run.id = "pipeline-<ISO-now>"`, `run.task` = raw request, `run.startedAt`, `run.status = "shaping"`, `chunks[]` cleared.
+1. **Initialise state.** Read `<cache>/pipeline.json`; if a prior run is `executing`/`shaping` and on a different task, warn the user and ask whether to resume, discard, or append. Otherwise reset: `run.id = "pipeline-<ISO-now>"`, `run.task` = raw request, `run.startedAt`, `run.status = "shaping"`, `run.tier`, `chunks[]` cleared. If state is unavailable or unwritable, note it once and continue without persistence.
 2. **Phase M1 — Requirements.** Adopt the [`requirements-generator`](./requirements-generator.md) persona. Produce a confirmation-ready brief. Wait for `approve` (with or without edits). Persist into `designBrief`.
 3. **Phase M2 — Shape.** Run [`shape-task`](./shape-task.md) using the confirmed brief as input. Land `requirements`, `strategy`, and `chunks[]` (each `status: "pending"`).
-4. **Skip Phase 3 (Explore) and Phase 4 (Architect Plan) by default.** Read the relevant files inline as the chunks need them — Medium scope means the cost of two sub-agent dispatches outweighs the grounding signal. If the user opted in via `+explore`, dispatch Explore once before Phase M3 and persist into `repoFindings`.
+4. **Skip Phase 3 (inspection) and Phase 4 (architect plan) by default.** Read the relevant files inline as the chunks need them — Medium scope means the cost of two sub-agent dispatches outweighs the grounding signal. If the user opted in via `+explore` and the adapter declares an inspection sub-agent, dispatch it once before Phase M3 and persist into `repoFindings`.
 5. **Phase M3 — Per-chunk loop.** For each chunk in order:
-   - Run [`execute-chunk`](./execute-chunk.md). Per-chunk validation is `pnpm lint` (changed scope) + `bash scripts/affected-tests.sh` + any contracts/workflow/schema gate the chunk touched.
+   - Run [`execute-chunk`](./execute-chunk.md). Per-chunk validation is scoped `<lint>` + `<test.affected>` + any gate whose scope the chunk touched.
    - Run [`close-chunk`](./close-chunk.md). On PASS continue; on PASS_WITH_NOTES continue if downstream is unaffected; on FAIL stop with a blocker summary.
 6. **Phase M4 — Cleanup-verify.** Run [`cleanup-verify`](./cleanup-verify.md). It owns the final `scope: "full"` stamp on `last-gate.json` if everything passed.
-7. **Skip Phase 9 (codex review) by default.** If the user opted in via `+codex`, run codex against the cumulative diff (same protocol as Large flow Phase 9). Otherwise emit the wrap-up summary and stop.
+7. **Skip independent review by default.** If the adapter declares one and the user opted in via `+review`, run it against the cumulative diff (same protocol as Large flow Phase 9). Otherwise emit the wrap-up summary and stop.
 
 If during Phase M3 a chunk's scope guard fires repeatedly, treat it as a misclassification — stop, re-surface as Large in Phase B, and resume from there.
 
@@ -147,19 +156,21 @@ This is the **previous 9-phase flow, unchanged**. Run all of:
 
 1. Requirements intake (interactive — wait for confirmation before shaping).
 2. Shape — run shape-task with the confirmed brief as input.
-3. Repository inspection — **always** dispatch the `Explore` sub-agent (`Agent` tool, `subagent_type: "Explore"`) and persist into `repoFindings`. Do not read files into the main thread for grounding.
-4. Architect plan — dispatch the `Plan` sub-agent (`Agent` tool, `subagent_type: "Plan"`) with a condensed briefing (goal, non-goals, chunk table with one-line objectives, top 5 critical files with one-line roles, pointer to `.claude/rules/architecture.md`). Reconcile the plan into `chunks[]`. Persist into `architectPlan`.
-5. Per-chunk execute — `execute-chunk` for each chunk in order. Inspect step uses the `Explore` sub-agent for any chunk needing >2 files of grounding the Phase 3 digest didn't cover. Per-chunk validation is targeted (lint + affected-tests + any touched contracts gate); full `pnpm check` and full `pnpm test` are deferred to Phase 8.
+3. Repository inspection — **always** dispatch the inspection sub-agent if the adapter declares one, and persist into `repoFindings`. Do not read files into the main thread for grounding. Where no sub-agent is available, inspect inline and say so.
+4. Architect plan — dispatch the planning sub-agent with a condensed briefing (goal, non-goals, chunk table with one-line objectives, top 5 critical files with one-line roles, pointer to the project's architecture rules if it has any). Reconcile the plan into `chunks[]`. Persist into `architectPlan`.
+5. Per-chunk execute — `execute-chunk` for each chunk in order. Inspect step uses the inspection sub-agent for any chunk needing >2 files of grounding the Phase 3 digest didn't cover. Per-chunk validation is targeted (scoped lint + affected tests + any gate the chunk touched); the full chain is deferred to Phase 8.
 6. Per-chunk close — `close-chunk` for each chunk. PASS / PASS_WITH_NOTES continue; FAIL stops.
-7. Wrap-up — compact one-line-per-chunk outcome summary. Do not flip the trailing TodoWrite item here.
+7. Wrap-up — compact one-line-per-chunk outcome summary. Do not flip the trailing todo item here.
 8. Cleanup-verify — `cleanup-verify` owns the final `scope: "full"` stamp on `last-gate.json`.
-9. Codex review — mandatory. Hard cap of 2 codex runs per pipeline (the second verdict is final). Track `run.codexRuns`.
+9. Independent review — mandatory for Large where the adapter declares one, skipped entirely where it does not. Respect the adapter's `maxRuns` cap (default 2; the last verdict is final). Track `run.reviewRuns`.
 
 Detailed phase rules for Large flow live below under `# Large flow phase details`.
 
 # Todo list mirror
 
-The router always mirrors its work into a `TodoWrite` list. The list is the user's progress view, and (for Large) its all-completed transition fires the codex review hook (`.claude/hooks/codex-review.sh`).
+If the adapter declares a `todoMirror` integration, the router mirrors its work into that list. The list is the user's progress view, and where the adapter wires independent review to a task-completion trigger, the all-completed transition is what fires it.
+
+**Where no todo primitive is declared, skip this section entirely** and report progress in chat instead. Nothing below is required for correctness — it is a progress-reporting convention, not a gate.
 
 Per-tier seed lists:
 
@@ -170,7 +181,7 @@ Per-tier seed lists:
 2. `Shape requirements and chunks`
 3. One item per execution chunk (added after shape decomposes them, before per-chunk loop starts)
 4. `Cleanup-verify`
-5. `Final summary` *(trailing item — codex hook does NOT fire on Medium unless `+codex` was passed)*
+5. `Final summary` *(trailing item — review does NOT fire on Medium unless `+review` was passed)*
 
 **Large flow** — same as the previous 9-phase seed list:
 1. `Refine brief with product designer`
@@ -179,16 +190,16 @@ Per-tier seed lists:
 4. `Architect plan`
 5. One item per execution chunk
 6. `Cleanup-verify`
-7. `Final validation & codex review` *(trailing item — codex trigger)*
+7. `Final validation & independent review` *(trailing item — review trigger)*
 
 Rules across all tiers:
 - Flip each item to `in_progress` on entering its phase, `completed` on a clean exit.
-- On chunk FAIL or BLOCKED, leave the chunk item non-completed so the codex hook does not fire on a partial run.
-- The trailing item stays `in_progress` until the final phase. **Do not** mark it `completed` before then — that flip is what triggers the hook.
+- On chunk FAIL or BLOCKED, leave the chunk item non-completed so a completion-triggered review does not fire on a partial run.
+- The trailing item stays `in_progress` until the final phase. **Do not** mark it `completed` before then — where review is completion-triggered, that flip is what fires it.
 
-# Cache lifecycle
+# State lifecycle
 
-You own `.claude/cache/pipeline.json` (schema in `.claude/cache/README.md`) for Medium and Large flows; Small flow does not touch the cache.
+You own `<cache>/pipeline.json` for Medium and Large flows; Small flow does not touch it. The full contract, including how to degrade when state is unavailable, is in [`state-schema.md`](./state-schema.md).
 
 | Phase | Field writes |
 | --- | --- |
@@ -196,11 +207,11 @@ You own `.claude/cache/pipeline.json` (schema in `.claude/cache/README.md`) for 
 | Requirements (Medium M1 / Large 1) | Write `designBrief` after user confirms. |
 | Shape (Medium M2 / Large 2) | Write `requirements`, `strategy`. Append every chunk to `chunks[]` with `status: "pending"`. |
 | Repo inspection (Large 3 only) | Write `repoFindings`. |
-| Architect plan (Large 4 only) | Write `architectPlan`. Initialise `run.codexRuns = 0`. Set `run.status = "executing"`. |
+| Architect plan (Large 4 only) | Write `architectPlan`. Initialise `run.reviewRuns = 0`. Set `run.status = "executing"`. |
 | Per-chunk (Medium M3 / Large 5–6) | Flip `chunks[i].status` `pending` → `executing` → `passed` (after execute) → `closed` (after close). Write `filesChanged`, `validation`, `closure`. |
 | Wrap-up (Large 7) | If all chunks closed PASS/PASS_WITH_NOTES: `run.status = "verifying"`. If blocked: `run.status = "blocked"`, leave `lastGate` alone. |
 | Cleanup-verify (Medium M4 / Large 8) | Run cleanup-verify; record verdict under `run.cleanupVerify`. **Cleanup-verify owns the final `scope: "full"` stamp on `last-gate.json`** if it reports a clean pass over the gate chain. The router does not separately stamp. |
-| Codex (Medium opt-in / Large 9) | Increment `run.codexRuns` after every codex invocation. Hard cap at 2. On second blocking verdict: `run.status = "complete_with_findings"`. On clean pass: `run.status = "complete"` and `run.completedAt`. |
+| Review (Medium opt-in / Large 9) | Increment `run.reviewRuns` after every invocation. Cap per the adapter's `maxRuns` (default 2). On a final blocking verdict: `run.status = "complete_with_findings"`. On clean pass: `run.status = "complete"` and `run.completedAt`. |
 
 # Scope-guard escape hatch
 
@@ -233,7 +244,7 @@ Refine the raw request with the user before any technical shaping. Interactive �
 2. Produce a **Requirements Brief** with: task summary, surface area, requirements (functional / non-functional / accessibility-when-UI / constraints / out-of-scope / dependencies / edge cases), open questions, assumptions, confirmation-ready brief, suggested next step.
 3. Skip sections that don't apply — for backend / contract / infra changes, omit user-journey and visual considerations.
 4. Surface the brief and **wait for confirmation or edits** before proceeding.
-5. Persist the confirmed brief into `pipeline.json#designBrief`.
+5. Persist the confirmed brief into `pipeline.json` under `designBrief`.
 
 **Proceed only after the user confirms the brief.**
 
@@ -243,37 +254,39 @@ Run shape-task end-to-end **using the confirmed design brief as the input** (not
 
 If shape-task surfaces blocking questions the brief didn't anticipate, return to Phase 1.
 
-## Phase 3: Repository inspection (mandatory Explore)
+## Phase 3: Repository inspection (mandatory)
 
-**Always** dispatch the `Explore` sub-agent (`Agent` tool, `subagent_type: "Explore"`) with the strategy from Phase 2. Brief it with the modules/files the strategy named, the validation commands the strategy plans to run, and the question set: implementation areas, test locations, relevant patterns, any architecture rules from `.claude/rules/architecture.md` likely to bump into.
+**Always** dispatch the inspection sub-agent named by the adapter (`integrations.subagents.inspect`) with the strategy from Phase 2. Brief it with the modules/files the strategy named, the validation commands the strategy plans to run, and the question set: implementation areas, test locations, relevant patterns, and any architecture rules the project documents that this work is likely to bump into.
 
 Thoroughness `medium` by default; `very thorough` only when the strategy is genuinely uncertain.
 
-Persist into `pipeline.json#repoFindings` and emit a one-screen digest under `## Repository Findings`. Do not paste full file dumps.
+Where the host provides no isolated-context sub-agent, inspect inline, keep the digest just as tight, and note in the report that inspection ran in the main context.
+
+Persist into `repoFindings` and emit a one-screen digest under `## Repository Findings`. Do not paste full file dumps.
 
 ## Phase 4: Architect plan
 
-Dispatch the **`Plan` sub-agent** (`Agent` tool, `subagent_type: "Plan"`) with a **condensed** briefing — the agent forks, so every line you send inflates the fork.
+Dispatch the planning sub-agent named by the adapter (`integrations.subagents.plan`) with a **condensed** briefing — the agent forks, so every line you send inflates the fork.
 
 Send exactly:
 
 - Brief's **goal, non-goals, and constraints** (skip context/users prose).
 - A **chunk table**: `chunk ID | one-line objective | acceptance criterion (one line)`. No full chunk specs.
 - The **top 5 critical files** identified by Phase 3 (path + one-line role). No file contents.
-- A pointer: "must comply with `.claude/rules/architecture.md` (15 hard rules + scanner)".
+- A pointer to the project's architecture rules, if it documents any.
 - The single question: produce a step-by-step implementation plan, list any additional critical files, name architectural trade-offs, and recommend chunk re-orderings, splits, or merges. Flag if it needs more detail before answering.
 
-Reconcile its output: re-ordering applies before Phase 5; splits/merges update `chunks[]` and the TodoWrite list; new risk goes into `scratchpad.notes`; "I need more detail" gets the specific slice asked for; architectural disagreement returns to Phase 2.
+Reconcile its output: re-ordering applies before Phase 5; splits/merges update `chunks[]` and the todo mirror; new risk goes into `scratchpad.notes`; "I need more detail" gets the specific slice asked for; architectural disagreement returns to Phase 2.
 
-Persist into `pipeline.json#architectPlan`.
+Persist into `architectPlan`.
 
 ## Phase 5: Execute each chunk
 
 For every chunk in order, run execute-chunk (interpret → inspect → plan → implement → validate → record).
 
 Two cost rules:
-- **Inspect uses `Explore`** when a chunk needs >2 files of grounding the Phase 3 digest didn't cover.
-- **Per-chunk validation is targeted**: `pnpm lint` (changed scope) + `bash scripts/affected-tests.sh` + any contracts/schema/workflow gate the chunk actually touched. Full `pnpm check` and full `pnpm test` are deferred to Phase 8.
+- **Inspect uses the sub-agent** when a chunk needs >2 files of grounding the Phase 3 digest didn't cover.
+- **Per-chunk validation is targeted**: scoped `<lint>` + `<test.affected>` + any gate whose scope the chunk actually touched. The full gate chain and full test suite are deferred to Phase 8.
 
 Apply the Scope Guard whenever unexpected surface appears.
 
@@ -285,23 +298,25 @@ Immediately after each execution, run close-chunk. PASS continues; PASS_WITH_NOT
 
 Emit a **compact** outcome summary — one line per chunk: `<ID> — <objective> — <closure decision>`. Aggregate files-changed count + list. Partially completed / blocked chunks. Remaining risks. Recommended next step.
 
-Reporting only — does not flip the trailing TodoWrite item.
+Reporting only — does not flip the trailing todo item.
 
 ## Phase 8: Cleanup-verify (mandatory; owns the final stamp)
 
-Run cleanup-verify. **It owns the final `scope: "full"` stamp** on `last-gate.json` if everything passed. If it reports drift the pipeline should have committed (e.g. regenerated `schema-types.ts`), handle it as a new chunk (execute-chunk → close-chunk), then re-run cleanup-verify.
+Run cleanup-verify. **It owns the final `scope: "full"` stamp** on `last-gate.json` if everything passed. If it reports drift the pipeline should have committed (a regenerated artefact differing from the one on disk), handle it as a new chunk (execute-chunk → close-chunk), then re-run cleanup-verify.
 
 Skip this phase only when the pipeline is BLOCKED before wrap-up.
 
-## Phase 9: Codex review (mandatory)
+## Phase 9: Independent review
 
-Every successful Large pipeline ends with a codex review of the cumulative diff. The hook (`.claude/hooks/codex-review.sh`) is what runs codex; this phase only triggers it.
+Where the adapter declares `integrations.independentReview` and marks it mandatory for Large, every successful Large pipeline ends with a review of the cumulative diff. **Where no reviewer is declared, skip this phase and say so in the report** — do not substitute a self-review and present it as independent.
 
-1. Confirm `last-gate.json` is fresh (Phase 8 stamp <240s old). If older, quick re-validate (`pnpm lint && bash scripts/affected-tests.sh`) and re-stamp.
-2. Trigger by flipping the trailing TodoWrite item to `completed`.
-3. Track attempts in `run.codexRuns`.
-4. On blocking findings (and `run.codexRuns < 2`): treat critical/high findings as a remediation chunk (execute-chunk → close-chunk), then re-run cleanup-verify (Phase 8) so it re-stamps, then trigger codex again by appending a `Codex remediation pass <N>` todo.
-5. **Hard cap: 2 codex runs.** After the second verdict: surface outstanding critical findings in the report, set `run.status = "complete_with_findings"`. Do not remediate again.
+Give the reviewer the requirement, the diff, the test output, and the rubric. Do not hand it your own narrative of why the implementation is correct; the value of the review is that it starts from the artefacts rather than from your reasoning.
+
+1. Confirm `last-gate.json` is fresh (Phase 8 stamp within 240s). If older, quick re-validate and re-stamp.
+2. Invoke the reviewer as the adapter describes.
+3. Track attempts in `run.reviewRuns`.
+4. On blocking findings, below the cap: treat critical/high findings as a remediation chunk (execute-chunk → close-chunk), re-run cleanup-verify (Phase 8) so it re-stamps, then invoke review again.
+5. **Respect the cap** (adapter `maxRuns`, default 2). After the final verdict: surface outstanding critical findings in the report, set `run.status = "complete_with_findings"`. Do not remediate again.
 
 # Output format
 
@@ -324,12 +339,13 @@ For Large: full structure below.
 ## 3. Repository Findings    (Large only — Medium opt-in via +explore)
 
 ## 4. Architect Plan          (Large only)
+
 ### Plan Summary
 ### Trade-offs / Risks
 ### Reconciliation With Chunks
 
 ## 5. Execution Chunks
-Table: ID | objective | size | status. Full specs in pipeline.json#chunks[].
+Table: ID | objective | size | status. Full specs in pipeline.json `chunks[]`.
 
 ## 6. Chunk Runs
 One bullet per chunk: <ID> — <objective> — <closure decision>. Re-emit detail only on FAIL or PASS_WITH_NOTES with downstream risk.
@@ -342,7 +358,7 @@ One bullet per chunk: <ID> — <objective> — <closure decision>. Re-emit detai
 ## 8. Cleanup & Verify
 Drift list, gate-by-gate, baseline comparison. Stamp written: yes/no.
 
-## 9. Codex Review            (Large mandatory; Medium opt-in)
+## 9. Independent Review      (Large mandatory where configured; Medium opt-in)
 ### Verdict (run 1)
 ### Verdict (run 2, if any)
 ### Outstanding Critical Findings (only if cap reached with blockers)

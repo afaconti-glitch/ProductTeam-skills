@@ -1,8 +1,21 @@
 # ProductTeam-skills
 
-Reusable Claude Code agent skills implementing a coordinated product-team operating system. The role definitions are project-agnostic, so the same suite can drive any project without dragging project-specific context with it.
+A portable persona and prompt operating system for a coordinated product team. The role definitions are project-agnostic, so the same suite can drive any project without dragging project-specific context with it.
 
-The suite contains 19 role personas plus a routing brain. Each role is a self-contained markdown skill (frontmatter + persona body) following the [Agent Skills](https://agentskills.io/home) format used by Claude Code, OpenAI Codex, and other compatible agents.
+The suite contains 19 role personas, an eight-skill delivery pipeline, and a routing brain. Each role is a self-contained markdown file: Agent-Skills-shaped frontmatter plus a persona body.
+
+### Packaging: what this is, and what it is not
+
+These are **flat markdown files invoked through the routing brain**, not natively packaged Agent Skills.
+
+The [Agent Skills](https://code.claude.com/docs/en/skills) format requires one directory per skill containing a `SKILL.md`, and hosts discover skills by scanning for that layout. This repository ships `product-team/<role>.md` instead. The practical consequences:
+
+- **Roles are not auto-discovered or auto-triggered.** They are read on demand via the paths in `routing.md`, which you paste into your `CLAUDE.md`. That is the intended design — the routing brain decides which lens applies, rather than a description match.
+- **`disable-model-invocation: true` in the frontmatter is inert** under this install. It is a skill-discovery field, and nothing discovers these as skills. It is retained so the files are ready to package later.
+- **`metadata`, `license` and `compatibility` are documentation**, not part of the Agent Skills schema, which requires only `name` and `description`.
+- **`allowed-tools` in the pipeline files is a host allow-list.** Entries a host does not recognise are ignored.
+
+Native packaging is a plausible future direction, not a claim about today. If you need auto-discovery, wrap each role in its own directory with a `SKILL.md` — the frontmatter is already close enough to make that mechanical.
 
 ## What's in here
 
@@ -27,7 +40,11 @@ ProductTeam-skills/
 │   ├── devops-engineer.md
 │   ├── security-specialist.md
 │   ├── qa-engineer.md
-│   └── delivery-manager.md
+│   ├── delivery-manager.md
+│   └── references/                   # Detail loaded on demand, not by default
+│       ├── security-audit-cookbook.md
+│       ├── security-healthcare-pack.md
+│       └── motion-resources.md
 ├── pipeline/                         # Delivery pipeline execution suite
 │   ├── run-pipeline.md               # Entry point — classify, confirm, dispatch
 │   ├── requirements-generator.md     # Lightweight coding-task intake
@@ -36,7 +53,14 @@ ProductTeam-skills/
 │   ├── close-chunk.md                # Verify chunk closure
 │   ├── cleanup-verify.md             # Post-pipeline gate sweep
 │   ├── diagnose.md                   # Systematic root-cause analysis
-│   └── design-critique.md            # Final-pass design review
+│   ├── design-critique.md            # Final-pass design review
+│   ├── project-adapter.md            # Per-project commands, gates, risky paths
+│   └── state-schema.md               # Shared pipeline state contract
+├── evals/                            # Does any of this actually help?
+│   ├── README.md                     # Design, and how to read the results
+│   ├── run.py                        # Runner — role vs no-role baseline
+│   ├── routing/cases.yaml            # Does routing pick the right role?
+│   └── roles/*.yaml                  # Per-role behaviour fixtures
 ├── routing.md                        # The routing brain (paste into your CLAUDE.md)
 └── README.md
 ```
@@ -55,6 +79,17 @@ Six skills that work as an integrated execution framework. The entry point is `r
 | cleanup-verify | Post-pipeline gate sweep: regenerate types, rebuild, check schema sync, run tests |
 | diagnose | Systematic root-cause analysis for bugs — reproduce → isolate → verify → fix |
 | design-critique | Final-pass design review producing a SHIP / SHIP_WITH_NOTES / HOLD decision |
+
+Two supporting documents make the pipeline portable:
+
+| Document | Purpose |
+|---|---|
+| [project-adapter.md](./pipeline/project-adapter.md) | Declares this project's package manager, gate chain, generated artefacts, risky paths and host integrations. Copy to `.claude/pipeline-adapter.md` and fill in. |
+| [state-schema.md](./pipeline/state-schema.md) | The shared state contract for `pipeline.json` and `last-gate.json`, including how skills degrade when state is unavailable. |
+
+**The pipeline runs without an adapter.** Skills fall back to discovering commands from repository instructions, manifests, CI config and the lockfile, and they state what they found. Writing the adapter makes it deterministic and lets you declare things discovery cannot infer — which gates may fail, which paths are risky, whether an independent reviewer exists.
+
+Nothing in the pipeline assumes a JavaScript toolchain, a specific agent host, or a writable cache. The worked example in the adapter is illustrative only.
 
 See `routing.md` for the full tier matrix and when to invoke each skill directly.
 
@@ -99,7 +134,7 @@ See `routing.md` for the full tier matrix and when to invoke each skill directly
 | QA Engineer | Test planning, regression, bug reporting, acceptance validation, durable proof of verification |
 | Delivery Manager | Delivery planning, dependency tracking, ceremonies, delivery risks |
 
-The Security Specialist covers threat modelling, UK GDPR / DPIA, supply-chain hygiene, IAM, browser security beyond CSP, AI safety beyond key protection, and healthcare-grade concerns, and can invoke the [vibe-security-skill](https://github.com/raroque/vibe-security-skill) cookbook for focused AI-introduced-vulnerability audits.
+The Security Specialist covers threat modelling, UK GDPR / DPIA, supply-chain hygiene including licence and commercial boundaries, IAM, browser security beyond CSP, and AI safety. Its nine-category audit checklist and its health-data domain pack live under `product-team/references/` and load only when the task calls for them. It can also invoke the [vibe-security-skill](https://github.com/raroque/vibe-security-skill) cookbook for focused AI-introduced-vulnerability audits.
 
 ## Installing into a project
 
@@ -141,11 +176,14 @@ Updating to a new release of this suite: `cd .claude/skills-vendor && git fetch 
 
 ```bash
 git clone https://github.com/afaconti-glitch/ProductTeam-skills.git /tmp/ProductTeam-skills
-mkdir -p .claude/skills/pipeline
+mkdir -p .claude/skills/pipeline .claude/skills/references
 cp /tmp/ProductTeam-skills/product-team/*.md .claude/skills/
+cp /tmp/ProductTeam-skills/product-team/references/*.md .claude/skills/references/
 cp /tmp/ProductTeam-skills/pipeline/*.md .claude/skills/pipeline/
 echo '.claude/' >> .gitignore
 ```
+
+Copy `references/` too — roles link to it by relative path, and the links break without it.
 
 Updates require re-copying. Use this when the project will diverge from the canonical suite.
 
@@ -162,9 +200,24 @@ Project-specific context (stack, architecture rules, engineering conventions, wo
 ## Conventions
 
 - All role files use **UK English** spelling.
-- Frontmatter follows the Agent Skills schema: `name`, `description`, `license`, `compatibility`, `metadata` (with `version`, `language`, `persona_type`, `tags`, `intents`, `output_types`).
+- Frontmatter carries `name` and `description` (the two fields the Agent Skills schema requires) plus `license`, `compatibility`, `disable-model-invocation` and `metadata` (`version`, `language`, `persona_type`, `tags`, `intents`, `output_types`). Everything beyond `name` and `description` is this repo's own documentation convention — see the packaging note above.
+- Keep role bodies **under 500 lines**, per [Anthropic's authoring guidance](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices). Past that, move detail into `product-team/references/` and link to it from the role with a stated trigger for when to read it.
 - Each role file ends with a `## Maintenance` section listing when to review it. Treat that as a versioning trigger — bump the role's `version` whenever you change behaviour-shaping content.
 - Role files are stable surface area: changes that alter how the role responds should be deliberate and documented in commit messages.
+
+## Evaluation
+
+Every role ships a `Regression prompts` section. Those are test-case *seeds*, not tests — nothing executed them. `evals/` turns them into something that runs.
+
+The design point is the baseline: each case runs twice, once with the role loaded and once without, and both are graded against the same assertions. **The metric that matters is the delta, not the pass rate.** A role that passes its own fixtures proves nothing if the same model passes them unaided.
+
+```bash
+python3 evals/run.py routing --dry-run
+```
+
+This is deliberately unflattering. [Benchmark evidence](https://arxiv.org/abs/2603.15401) across 49 public agent skills found 39 produced no measurable improvement at all, and three made results worse — so expect a meaningful share of cases to land in "role changed nothing." Those cases are the point: they identify content that can be cut.
+
+Evals are a development dependency of this repository (`claude` CLI, `python3`, PyYAML). The skills themselves remain plain markdown with no runtime requirements. See [evals/README.md](./evals/README.md).
 
 ## Versioning
 

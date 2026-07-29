@@ -1,7 +1,7 @@
 ---
 name: cleanup-verify
-description: Post-pipeline cleanup and verification pass. Regenerate contracts types, rebuild the workspace, confirm schema src↔dist sync, run the `pnpm check` gates individually, run package tests, and report any drift or regressions against the pre-run baseline.
-argument-hint: [optional: baseline violation count to compare against]
+description: Post-pipeline cleanup and verification pass. Regenerates generated artefacts, rebuilds, confirms source↔generated sync, runs the project's gate chain gate-by-gate, runs tests, and reports drift or regressions against the pre-run baseline.
+argument-hint: "[optional: baseline violation count to compare against]"
 disable-model-invocation: true
 allowed-tools:
   - Read
@@ -14,228 +14,194 @@ allowed-tools:
 
 You are a post-implementation cleanup and verification skill.
 
-Your job is to run a deterministic cleanup+verification pass after a pipeline has finished touching code — especially work that may have changed JSON schemas, contracts, generated types, or anything rebuilt into `packages/*/dist/`.
+Your job is to run a deterministic cleanup and verification pass after a pipeline has finished touching code — especially work that may have changed schemas, contracts, generated types, or anything rebuilt into a distribution directory.
 
 You are NOT the primary implementer. Do not make code changes. Your outputs are:
 
-1. a regenerated + rebuilt workspace state,
-2. a byte-level confirmation that `packages/contracts/src/schemas/*.json` matches `packages/contracts/dist/schemas/*.json`,
-3. a gate-by-gate result for `pnpm check`,
-4. a pass/fail summary for the per-package tests,
-5. a concise regression report comparing scanner violations to a baseline.
+1. a regenerated and rebuilt workspace state,
+2. a confirmation that every generated artefact matches its source,
+3. a gate-by-gate result for the project's gate chain,
+4. a pass/fail summary for the test suites,
+5. a concise regression report comparing any ratcheted gate to its baseline.
 
-If any step reveals drift that the pipeline should have committed (for example a regenerated `schema-types.ts` that differs from the one on disk), stop and report it — do not silently overwrite and commit. The caller decides whether to accept the regenerated artefact.
+If any step reveals drift the pipeline should have committed, stop and report it — do not silently overwrite and commit. The caller decides whether to accept the regenerated artefact.
+
+## Step 0 — Resolve the project
+
+Read [`project-adapter.md`](./project-adapter.md) at `.claude/pipeline-adapter.md`. It declares the commands, gate chain, generated artefacts, state location and integrations for this repository.
+
+**If no adapter exists,** discover them using the fallback order in that document (repository instructions → manifests → CI config → lockfile). State what you discovered and where it came from before running anything.
+
+**If you cannot establish a gate chain, stop and ask.** Do not guess commands, and do not assume a JavaScript toolchain — this skill runs against any stack.
+
+Everything below refers to the resolved values. `<lint>`, `<test>`, `<build>` and similar are placeholders for what you resolved, not literal commands.
 
 ## When to use this skill
 
-Use it immediately after a pipeline run whose chunks touched any of:
+Immediately after a pipeline run whose chunks touched any of:
 
-- `packages/contracts/src/schemas/*.json`
-- `packages/contracts/src/schema-registry.ts`
-- Anything the generator reads from (`scripts/generate-types.ts`, etc.)
-- Workflow JSON under `workflows/`
-- Any `.ts` file whose behaviour leans on the generated types
+- a source file that generates another artefact;
+- a schema, contract, or interface definition;
+- anything the project's generators read from;
+- any file whose behaviour leans on generated output.
 
-Also use it as a routine sanity pass when `.claude/cache/last-gate.json` is stale and the user has asked for "verification" or "cleanup".
+Also as a routine sanity pass when the gate stamp is stale and the user has asked for verification or cleanup.
 
 ## Core steps
 
-Run these in order. Do not skip a step without a stated reason.
+Run in order. Do not skip a step without a stated reason.
 
-### 0. Honour a fresh TodoWrite gate stamp
+### 0. Honour a fresh gate stamp
 
-Before doing any work, read `.claude/cache/last-gate.json`. If it exists with `success === true`, `scope === "full"`, and `at` is within the last 300 seconds, the TodoWrite hook (or a prior skill) has just run the full gate chain end-to-end. In that case:
+Read `<cache>/last-gate.json` (see [`state-schema.md`](./state-schema.md)). If `success === true`, `scope === "full"`, and `at` is within `state.gateStampTtlSeconds`, the full chain has just run end-to-end:
 
-- **Skip steps 5 and 6 entirely.** Steps 5 (`pnpm check` gates individually) and 6 (per-package tests) are exactly what the TodoWrite gate chain already ran; re-running them burns minutes of `pnpm test` and produces no new signal.
-- Still run steps 1–4 (baseline, regenerate, build, schema sync) — those are contracts-specific verification that the TodoWrite gate does not cover.
-- Still run step 7 (final working tree check).
-- Record in the report under each skipped step: "Skipped — fresh `last-gate.json` marker (age <Xs). Results inherited from the TodoWrite gate chain." Do not re-stamp `last-gate.json` in step 8 in this case — the existing stamp is still authoritative.
-- The marker being stale or absent means steps 5–6 run normally.
+- **Skip steps 5 and 6.** They are exactly what that chain already ran; repeating them costs minutes and produces no new signal.
+- Still run steps 1–4 — artefact verification is not covered by a generic gate run.
+- Still run step 7.
+- Record under each skipped step: `Skipped — fresh gate stamp (age <N>s). Results inherited.`
+- Do not re-stamp in step 8; the existing stamp remains authoritative.
+
+A stale or absent marker means steps 5–6 run normally.
 
 ### 1. Capture the baseline
 
-Before doing anything destructive:
+Before anything destructive:
 
-- Record the current `git status --short` (should be clean if a pipeline just closed; otherwise note the working tree state).
-- Capture the current `check:architecture` violation count:
-  ```bash
-  pnpm check:architecture 2>&1 | grep -E "^Architecture scan" | tail -1
-  ```
-  Store the number. This is the **pre-run baseline**.
-- If `$ARGUMENTS` was provided and parses as an integer, treat that as the **expected baseline** and flag divergence.
+- Record `git status --short`. Should be clean if a pipeline just closed; otherwise note the working tree state.
+- For each **ratcheted** gate (declared `blocking: false` with a baseline), capture its current count using the adapter's documented read command. This is the pre-run baseline.
+- If `$ARGUMENTS` parses as an integer, treat it as the expected baseline and flag any divergence.
 
-### 2. Regenerate contracts types
+If the project declares no ratcheted gates, record "none" and continue.
 
-```bash
-pnpm contracts:generate
-```
+### 2. Regenerate artefacts
 
-Then confirm drift:
+For each entry in `artefacts` that has a `regenerate` command, run it, then run its `driftCheck` if declared.
 
-```bash
-pnpm check:drift
-```
+- Drift present → the regenerator produced different output from what is on disk. **Stop.** Report the diff and ask the caller to commit or reconcile.
+- Drift clean → continue.
 
-- If drift exists, the regenerator produced a different `schema-types.ts`. Stop, report the diff, and ask the caller to commit or reconcile. Do not proceed.
-- If drift is clean (`Generated types are up to date.`), continue.
+### 3. Rebuild
 
-### 3. Rebuild the workspace
+Run the project's `build`. Report how many units built and which failed. Any build failure is a hard stop — report the failing unit and the tail of its output.
 
-```bash
-pnpm -r build
-```
+Skip with a note if the project declares no build step.
 
-Expect all 8 projects to finish `Done`. Any project failing to build is a hard stop — report the failing project and the tail of its output.
+### 4. Verify source ↔ generated equivalence
 
-### 4. Verify schema src↔dist equivalence
+For each `artefacts` entry, compare `generated` against `source` using the declared `compare` mode:
 
-For every file in `packages/contracts/src/schemas/*.schema.json`, compare to the corresponding `packages/contracts/dist/schemas/*.schema.json` using structural equality (JSON stringify round-trip), not text diff — whitespace is expected to differ:
+- **`structural`** — parse both and compare the parsed values, so formatting differences do not register as drift.
+- **`bytes`** — exact comparison.
 
-```bash
-for f in packages/contracts/src/schemas/*.schema.json; do
-  name=$(basename "$f")
-  dist="packages/contracts/dist/schemas/$name"
-  node -e "const a=require('./$f');const b=require('./$dist');if(JSON.stringify(a)!==JSON.stringify(b))console.log('MISMATCH: $name');"
-done
-```
+Report files compared and any mismatch. A mismatch usually means step 3 did not run or did not cover this artefact; report which file and stop.
 
-- Zero output → schemas are in sync. Good.
-- Any `MISMATCH:` line → dist is stale. Usually the rebuild in step 3 should have fixed this; if not, report which file and stop.
+### 5. Run the gate chain, gate by gate
 
-### 5. Run the `pnpm check` gates individually
+Run each gate in `gates.chain` **individually** so the report distinguishes which passed. Do not run them as one combined command — a single aggregate exit code hides which gate failed.
 
-Run each gate on its own so the report distinguishes which gates pass:
+Record a pass/fail table. For each ratcheted gate, record the current count and the delta against step 1's baseline.
 
-```bash
-pnpm contracts:validate
-pnpm contracts:registry
-pnpm check:drift
-pnpm check:workflow
-pnpm check:architecture   # expected to fail on the known baseline
-```
+### 6. Run tests
 
-Record a table of pass/fail for each gate. For `check:architecture`, record the current violation count and compare to the baseline captured in step 1.
+Run the project's test suites and record pass/fail counts per suite. Use the per-suite breakdown from the adapter if declared, otherwise the single `test` command.
 
-### 6. Run package tests
-
-Run each package's tests and record pass/fail counts:
-
-```bash
-pnpm --filter @prompt-manager/contracts test
-pnpm --filter @prompt-manager/workflow-engine test
-pnpm --filter @prompt-manager/backend test           # unit only
-pnpm --filter @prompt-manager/providers test
-```
-
-(Skip `test:integration` unless the caller explicitly asked for it — it needs Postgres.)
+Skip suites the project marks as requiring external services unless the caller explicitly asked for them; say which were skipped and why.
 
 ### 7. Confirm working tree
 
-Final `git status --short`. After a clean cleanup-verify pass on a just-closed pipeline, this should still be clean (or only contain the intentional diffs from the pipeline run). Any stray files are a finding.
+Final `git status --short`. After a clean pass on a just-closed pipeline this should be clean, or contain only the pipeline's intentional diffs. Stray files are a finding.
 
-### 8. Stamp the gate marker (only if everything passed)
+### 8. Stamp the gate marker
 
-If and only if:
+Stamp only if **all** of:
 
-- every gate in step 5 passed **except** `check:architecture` with an unchanged baseline, AND
-- every test in step 6 passed, AND
-- there is no drift
+- every blocking gate in step 5 passed, and
+- every ratcheted gate is no worse than its baseline, and
+- every test in step 6 passed, and
+- there is no unreconciled drift.
 
-…then you MAY stamp `.claude/cache/last-gate.json` with:
+Write `<cache>/last-gate.json` per [`state-schema.md`](./state-schema.md).
 
-```json
-{ "at": "<ISO-now>", "scope": "per-chunk", "success": true }
-```
+Choose `scope` honestly:
 
-Use `scope: "per-chunk"` — NOT `"full"` — because the architecture scan baseline was not brought to zero. The TodoWrite task-completion hook only honours `scope: "full"`, so this stamp is informational only and will not suppress the hook. That is deliberate.
+- **`full`** — every blocking gate passed *and* every ratchet is at or better than baseline. This is the stamp other skills use to skip work, so it must mean the chain genuinely passed end to end.
+- **`per-chunk`** — anything narrower: suites skipped, a ratchet carrying accepted debt the project has not cleared, or partial coverage. Informational only.
 
-Only stamp `scope: "full"` if `pnpm lint && pnpm check && pnpm test` all pass end-to-end with zero architecture violations — in other words, not in the current repo state.
+When a project carries a permanently non-zero ratchet, `full` is still correct provided the ratchet has not worsened — that is what the baseline is for. Do not withhold a legitimate `full` stamp, and do not inflate a partial run into one.
+
+Stamp only from a chain you ran and observed in this session. Never stamp from a `validation` record you merely read.
 
 ## Output format
 
-Always structure the report like this:
-
+```
 # Cleanup & Verify Report
 
-## 1. Baseline
+## 0. Project resolution
+- adapter: found at <path> | not found — discovered from <source>
+- gate chain: <N> gates (<M> blocking, <R> ratcheted)
 
+## 1. Baseline
 - working tree: clean / dirty (details)
-- check:architecture baseline: `N violation(s)`
+- ratcheted gates: <gate>: N | none
 
 ## 2. Regenerate
-
-- drift: clean / drifted (details)
+- per artefact: clean / drifted (details)
 
 ## 3. Build
+- units built: N / N
+- failing: (none) or list
 
-- projects built: N / N
-- failing projects: (none) or list
-
-## 4. Schema sync
-
+## 4. Artefact sync
 - files compared: N
 - mismatches: (none) or list
 
-## 5. Check gates
-
-| Gate | Result |
-| --- | --- |
-| contracts:validate | PASS / FAIL |
-| contracts:registry | PASS / FAIL (N refs) |
-| check:drift | PASS / FAIL |
-| check:workflow | PASS / FAIL |
-| check:architecture | FAIL (N violations, Δ vs baseline) |
+## 5. Gate chain
+| Gate | Blocking | Result | Δ vs baseline |
 
 ## 6. Tests
-
-| Package | Passed / Failed |
-| --- | --- |
-| contracts | N / 0 |
-| workflow-engine | N / 0 |
-| backend (unit) | N / 0 |
-| providers | N / 0 |
+| Suite | Passed / Failed | Skipped (reason) |
 
 ## 7. Final working tree
-
 - clean / dirty (details)
 
 ## 8. Gate marker
-
-- stamped / not stamped (reason)
+- stamped <scope> / not stamped (reason)
 
 ## 9. Verdict
+```
 
-One of:
+Verdict is one of:
 
-- **CLEAN** — no regressions vs baseline, no drift, all tests pass. The pipeline's changes are safe.
-- **CLEAN-WITH-NOTES** — non-blocking findings (e.g. architecture baseline unchanged but still high; informational stamp written).
-- **REGRESSION** — something got worse than the baseline. Stop and list exactly what.
-- **BLOCKED** — cleanup could not complete (build failed, drift not reconciled, test failure). List the blocker.
+- **CLEAN** — no regressions, no drift, all tests pass. The pipeline's changes are safe.
+- **CLEAN-WITH-NOTES** — non-blocking findings only.
+- **REGRESSION** — something got worse than baseline. Stop and list exactly what.
+- **BLOCKED** — cleanup could not complete. List the blocker.
 
 ## Style rules
 
 - Be concise. Tables over prose.
-- Never claim a gate passed without showing the command output that proves it.
-- Never silently overwrite `schema-types.ts`. If regeneration produces a diff, stop and report.
+- Never claim a gate passed without the command output that proves it.
+- Never silently overwrite a generated artefact. If regeneration produces a diff, stop and report.
 - Never modify source files. This skill is verification only.
-- Do not mark the run green if `check:architecture` worsened against the baseline, even if every other gate passed.
+- Do not mark the run green if a ratcheted gate worsened, even if every other gate passed.
+- Name the resolved commands in the report. A reader must be able to see what actually ran.
 
-## Cache integration
+## State integration
 
-Read `.claude/cache/pipeline.json` at entry to:
+State is optional — see [`state-schema.md`](./state-schema.md). If unavailable or unwritable, report in chat and skip persistence. Do not fail the skill.
 
-- confirm `run.status` is `"complete"` or `"blocked"` (this skill is not for active in-flight runs — it's a post-run pass).
-- pull the list of `filesChanged` across all closed chunks into the report as "pipeline touched files" context.
+Read `<cache>/pipeline.json` at entry to:
+
+- confirm `run.status` is `complete` or `blocked`; this is a post-run pass, not for in-flight runs;
+- pull `filesChanged` across closed chunks into the report as touched-files context.
 
 On exit:
 
-- Append a terse summary line to `scratchpad.notes[]`: `"cleanup-verify <timestamp>: <verdict> (arch Δ=+0)"` or similar.
-- If the verdict is CLEAN or CLEAN-WITH-NOTES, update `lastGate` per step 8 above.
-- Do not modify any other cache field.
+- append a terse line to `scratchpad.notes[]`: `cleanup-verify <timestamp>: <verdict>`;
+- record the verdict under `run.cleanupVerify`;
+- update `lastGate` per step 8. Do not modify any other field.
 
-Writes to `.claude/cache/pipeline.json` and `.claude/cache/last-gate.json` require the workspace to have granted Write permission in `.claude/settings.local.json`. If writes are denied, report the verdict in chat and skip the cache updates — do not fail the skill.
-
-When invoked with arguments, treat `$ARGUMENTS` as the expected pre-run architecture violation count to compare against.
+When invoked with arguments, treat `$ARGUMENTS` as the expected pre-run baseline count.
 
 Baseline hint:
 $ARGUMENTS

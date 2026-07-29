@@ -239,7 +239,7 @@ Include:
 
 ## Cache integration
 
-Persist the shaped output into `.claude/cache/pipeline.json` so `execute-chunk`, `close-chunk`, and the TodoWrite hook can use it. See `.claude/cache/README.md` for the schema.
+Persist the shaped output into `<cache>/pipeline.json` so `execute-chunk` and `close-chunk` can use it. See [`state-schema.md`](./state-schema.md) for the contract, including how to proceed when state is unavailable.
 
 On entry:
 
@@ -252,7 +252,7 @@ On exit:
 - Write the structured outputs into `requirements`, `strategy`, and `chunks[]` (each chunk gets `status: "pending"`, an `id`, `objective`, `acceptanceCriteria`, and `size`).
 - Set `run.status = "ready"` (or `"blocked"` if blocking questions remain) and update `updatedAt`.
 
-Do not touch `lastGate` — only the execute/close skills and the TodoWrite hook write to that.
+Do not touch `lastGate` — only the execute/close/cleanup skills write to that.
 
 When invoked with arguments, treat `$ARGUMENTS` as the raw task request to shape.
 

@@ -1,0 +1,116 @@
+suite: routing
+description: >
+  Does the routing brain select the correct role? These roles are not
+  auto-discovered — routing.md dispatches them — so this is the equivalent of a
+  trigger test. Graded by exact match; no model grader, no baseline.
+
+  Cases using expect_any encode documented overlaps between roles. Their failure
+  rate is the measurement of how ambiguous routing actually is, which the
+  external review asserted but never tested. A high ambiguity rate is a finding
+  about role boundaries, not a bug in the harness.
+
+cases:
+  # --- unambiguous: each maps to one role via routing.md's specialist examples
+
+  - id: routing-error-copy
+    prompt: "The error message shown when a payment fails is confusing people. Rewrite it."
+    expect: content-designer
+    rationale: pure UX writing; named explicitly in specialist routing
+
+  - id: routing-metric-definition
+    prompt: "Write the SQL definition for weekly active users so it's consistent across dashboards."
+    expect: data-analyst
+    rationale: SQL metric definition is a named specialist example
+
+  - id: routing-rls-review
+    prompt: "Review this Postgres migration for row-level-security gaps before we ship it."
+    expect: security-specialist
+    rationale: RLS/auth review is a named specialist example
+
+  - id: routing-tab-motion
+    prompt: "Specify the motion for a tab switch with a shared active indicator."
+    expect: motion-designer
+    rationale: verbatim from the motion-designer regression prompts
+
+  - id: routing-tier-pricing
+    prompt: "Should this feature sit in the Pro tier at £19, or in the free tier as a loss leader?"
+    expect: pricing-strategist
+    rationale: tier design and packaging is a named specialist example
+
+  - id: routing-regression-plan
+    prompt: "Put together a regression test plan for the checkout flow before Friday's release."
+    expect: qa-engineer
+    rationale: regression plan is a named specialist example
+
+  - id: routing-deploy-risk
+    prompt: "Our deploys have rolled back twice this week. What's the release risk and what should we change?"
+    expect: devops-engineer
+    rationale: deployment risk is a named specialist example
+
+  - id: routing-installed-version
+    prompt: "This code example is written against the library's latest docs, but check it against the version we actually have installed."
+    expect: software-engineer
+    rationale: version-matched API use was added to software-engineer and to routing's specialist examples
+
+  - id: routing-chart-a11y
+    prompt: "Our revenue dashboard uses colour alone to distinguish the four series. Is that a problem?"
+    expect: accessibility-specialist
+    rationale: data-visualisation accessibility is a named specialist example
+
+  - id: routing-standing-dependency
+    prompt: "We're considering adopting this component library across every product. Should it become a standing dependency?"
+    expect: technical-architect
+    rationale: standing-dependency evaluation is a named specialist example
+
+  # --- negative control: should NOT pull a specialist
+
+  - id: routing-trivial-typo
+    prompt: "Fix the typo in the word 'recieve' in the footer."
+    expect_any: [software-engineer, run-pipeline, none]
+    rationale: >
+      Trivial mechanical work. Should not summon a design, research or strategy
+      persona. If a specialist is selected here, routing is over-eager.
+
+  # --- documented overlaps: measure the ambiguity rather than assert it
+
+  - id: routing-overlap-primary-button
+    prompt: "Users can't tell which button is the primary action on our forms."
+    expect_any: [product-designer, design-systems-specialist, accessibility-specialist]
+    rationale: >
+      Overlap the review flagged: Product Designer vs Design Systems vs
+      Accessibility. All three are defensible; the question is whether routing
+      picks consistently.
+
+  - id: routing-overlap-churn
+    prompt: "We need to understand why users churn after their second week."
+    expect_any: [ux-researcher, data-analyst, customer-success, discovery]
+    rationale: >
+      Overlap the review flagged: UX Research vs Data vs Customer Success.
+      Discovery Squad is also a correct answer.
+
+  - id: routing-overlap-build-vs-buy
+    prompt: "Should we build this payments integration ourselves or use a vendor?"
+    expect_any: [technical-architect, product-manager, platform]
+    rationale: >
+      Overlap: architecture decision with a clear product/commercial dimension.
+
+  - id: routing-overlap-launch-messaging
+    prompt: "We're launching the new reporting feature next month and nobody knows what to tell customers."
+    expect_any: [growth-product-marketing-manager, product-manager, content-designer, growth]
+    rationale: >
+      Overlap the review flagged: Product Strategist vs Growth PMM vs PM on
+      positioning and launch. Growth Squad is also correct — routing.md lists
+      "messaging is the problem" as a Growth Squad trigger. The squad answer was
+      omitted from the accepted list in the first version of this fixture, which
+      scored three correct routings as failures.
+
+  # --- squad-level: cross-functional work should escalate, not pick one role
+
+  - id: routing-squad-ready-to-ship
+    prompt: >
+      The new patient-intake flow is code complete. Is it good enough to ship?
+      We need design, accessibility and security signed off.
+    expect_any: [validation, qa-engineer]
+    rationale: >
+      Explicitly cross-functional and close to release — the Validation Squad
+      case. Selecting a single role here is a routing miss.

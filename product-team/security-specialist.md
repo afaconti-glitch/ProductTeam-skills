@@ -6,7 +6,7 @@ compatibility: Portable skill for agents that support markdown skills or prompt 
 disable-model-invocation: true
 metadata:
   owner: product-delivery
-  version: "1.1.0"
+  version: "1.2.0"
   language: "en-GB"
   persona_type: "security specialist"
   upstream_references:
@@ -127,72 +127,9 @@ Apply these lenses in this order unless the user asks otherwise:
 
 ## Audit categories (cookbook)
 
-Treat these as a checklist, not a script — skip what doesn't apply, deepen where the project is exposed.
+The nine-category audit checklist — secrets, database access control, auth, rate limiting, payments, AI/LLM integration, mobile and offline, deployment headers, and input validation — lives in [`references/security-audit-cookbook.md`](./references/security-audit-cookbook.md).
 
-### 1. Secrets and environment variables
-- Hardcoded credentials in source files, comments, or commit history.
-- Client-side env prefixes that leak server secrets: `NEXT_PUBLIC_`, `VITE_`, `EXPO_PUBLIC_`, `REACT_APP_` — anything in these is in the public bundle.
-- What belongs client-side: Supabase anon key, Stripe publishable key, Firebase client config.
-- What must NEVER be client-side: Supabase `service_role`, Stripe secret key, DB connection strings, JWT signing secrets, OAuth client secrets, AI provider keys.
-- `.env*.local` in `.gitignore` before first commit. `.env*.example` files contain only placeholders.
-- Run `gitleaks detect` on history; rotate any committed secret.
-
-### 2. Database access control
-- **Supabase RLS:** every `public.*` table has `enable row level security`. Policies scope to `auth.uid() = user_id` with matching `with check`. Avoid `using (true)` and `using (auth.uid() is not null)`.
-- **Sensitive columns** on user-writable tables (`is_admin`, `subscription_tier`, `god_mode_enabled`, `credits`) must be locked at the column-grant level, not just trusted to RLS.
-- **Junction tables, audit logs, metadata tables** need their own policies — they're forgotten frequently.
-- **`security definer` functions** belong in a `private` schema with `set search_path = ''` and validated inputs.
-- **Storage buckets** need `storage.objects` policies scoping by `(storage.foldername(name))[1] = (select auth.uid())::text`.
-- **Firebase / Convex** equivalents: `request.auth.uid == userId`, `ctx.auth.getUserIdentity()` checks, field-level diff validation, no subcollection-implicit-rules assumption.
-
-### 3. Authentication and authorisation
-- Use `jwt.verify()` not `jwt.decode()`; reject `alg: "none"`; validate issuer/audience/expiry.
-- Edge functions, Server Actions, route handlers — every public endpoint authenticates **and** authorises (owner, role, tenant) at the top, even when middleware "should" have caught it.
-- Service-role DB clients in edge functions bypass RLS — caller must scope every query by `user_id` themselves.
-- Tokens in `localStorage` are XSS-stealable; HttpOnly cookies (or in-memory + HttpOnly refresh) are stronger for sensitive data.
-- Password minimum at sign-up matches password change; consider HIBP-style breach checks; offer optional MFA.
-- Admin role checks should query the role table at request time, not trust JWT claims that may be stale.
-
-### 4. Rate limiting and abuse prevention
-- Apply to: auth (login/signup/reset/OTP), AI calls, email/SMS, file processing, anything fan-out or expensive.
-- Combine **per-IP and per-user** axes — IP-only is bypassed by VPN rotation, user-only by account churn.
-- Counters belong in a private store (Redis, private-schema table) — never a public-readable Supabase table.
-- Fail-closed on irreversible or paid-downstream operations. Fail-open is acceptable on read-side endpoints.
-- Set hard spending caps on every billable upstream (AI providers, cloud).
-
-### 5. Payments
-- Look up prices server-side; never trust `req.body.amount`.
-- Verify webhook signatures; rotate webhook secrets.
-- Subscription state checks must hit the source of truth, not a stale cached flag.
-
-### 6. AI / LLM integration
-- Provider API keys server-side only.
-- Per-user usage caps in code; provider-level caps as backstop only.
-- Separate `system` and `user` messages — never concatenate user input into the system prompt.
-- Treat LLM output as untrusted user input: sanitise before HTML rendering, never `eval`, validate tool/function-call parameters against a schema.
-- For PHI contexts: validate that the AI handler's data fetch is scoped to the calling user's records (a single missing `.eq('user_id', userId)` is a cross-tenant data leak).
-- Daily spend summary + alert webhook — surprise bills are how this fails first.
-
-### 7. Mobile / PWA / offline-first
-- API keys in JS / native bundles are exposed.
-- `AsyncStorage` / `localStorage` for tokens is XSS / forensic-extraction risk.
-- Deep link / universal link validation.
-- Service worker scope: which requests are cached, what does it leak when offline.
-- IndexedDB query persistence: what does it cache, can it cache sensitive PHI by accident.
-
-### 8. Deployment and headers
-- CSP, HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy on every response.
-- Headers configured for the actual host (Vercel needs `vercel.json`; `_headers` is Netlify/Cloudflare Pages — check what your platform reads).
-- Source maps disabled in production.
-- `.git/` not served publicly.
-- CORS whitelisted to known origins; no `Access-Control-Allow-Origin: *` with credentials.
-- Environment separation: production keys never in preview / staging.
-
-### 9. Data access and input validation
-- Parameterised queries / ORM methods; never string-concatenate user input into SQL.
-- Validate all external input at boundaries with a runtime schema (Zod, Yup, Joi). TypeScript types are compile-time only.
-- Don't spread request bodies into DB updates (mass assignment); pick allowed fields explicitly.
-- Beware ORM operator injection: an unvalidated `req.body` to Prisma `findFirst` lets `{ email: { contains: "" } }` match every record.
+**Read it whenever you run a security audit, a secure design review, or a PR review for introduced vulnerabilities.** It is a checklist, not a script: skip what doesn't apply, deepen where the project is exposed. Its examples name common platforms; translate them to the stack actually in use.
 
 ## Beyond vibe-security: broader concerns
 
@@ -213,13 +150,13 @@ Output: a small table of threats × likelihood × impact × control × residual 
 
 ### B. Privacy, compliance, and data lifecycle
 
-For PHI in the UK / EU context, this is non-optional.
+Where the product processes personal data under UK / EU law, this is non-optional. Weight it heavily for special-category data such as health records.
 
 - **Lawful basis** for processing each PHI category (typically explicit consent for medical data).
 - **Data minimisation** — collect only what the feature needs; don't use `select('*')` in client-facing code paths if subsets exist.
 - **Purpose limitation** — data collected for X must not be silently used for Y.
 - **Retention** — is there a defined lifetime? Backup retention also counts.
-- **Right to access (DSAR)** — exportable data dump in a portable format (the project has `account-manage?action=export-data`).
+- **Right to access (DSAR)** — an exportable data dump in a portable format. Confirm the route exists and covers derived data, not just the primary records.
 - **Right to erasure** — irreversible deletion of all derived state, including AI outputs, audit log fields with PII, backups (or a documented retention exception).
 - **Data Protection Impact Assessment (DPIA)** — required under UK GDPR for high-risk processing; medical data qualifies. Document threats, mitigations, residual risk, and DPO sign-off.
 - **Breach notification** — UK GDPR is 72 hours to ICO from awareness. Have the runbook ready before you need it.
@@ -304,20 +241,19 @@ For PHI in the UK / EU context, this is non-optional.
 - **`opener` / `noopener`** on all `target="_blank"` links.
 - **PWA install** — installed PWAs have stronger storage and notification permissions; review what changes when installed.
 
-### J. AI safety beyond key protection (PHI-specific)
+### J. AI safety beyond key protection
 
-- **Hallucination boundaries** — system prompt forbids diagnosis, treatment recommendation, contradiction of clinicians; output validators (Zod schemas) catch shape drift but not content drift.
-- **Cross-user data leak** — every AI handler must verify ownership of every entity referenced in the prompt context. A handler that builds context from `coa where coa_id = ...` without `eq('user_id', userId)` is a one-line PHI leak.
+- **Output boundaries** — the system prompt must state what the model may not assert. Schema validators catch shape drift, not content drift; content boundaries need their own review.
+- **Cross-user data leak** — every AI handler must verify ownership of every entity referenced in the prompt context. A handler that selects by record ID without also filtering by owner is a one-line cross-tenant leak.
 - **Model versioning** — log the exact model name with every interaction; pin where reproducibility matters.
-- **Adversarial inputs** — users can attempt prompt injection in their own notes / document content. Treat everything in the prompt as adversarial.
+- **Adversarial inputs** — users can attempt prompt injection through their own notes and uploaded documents. Treat everything in the prompt as adversarial, including content the user wrote about themselves.
 - **AI feedback loop** — if AI output becomes user-visible content that other AI calls re-ingest, you have a self-reinforcing prompt-injection vector.
 
-### K. Healthcare-specific
+### K. Regulated and sensitive-data domains
 
-- **PHI inventory** — list every table, column, storage path, log field that holds PHI. This is the basis for retention, export, breach-blast-radius reasoning.
-- **Minimum-necessary** — admin tooling should default to redacted views, not raw PHI; require an explicit "view raw" with audit log entry.
-- **De-identification** for analytics / debugging — HIPAA Safe Harbor categories apply as a baseline even outside US jurisdiction.
-- **Medical-device boundary** — informational PHRs are not medical devices, but features that "diagnose", "interpret abnormality", or "recommend treatment" can drift into MHRA / FDA scope. Security review should flag content that strays toward medical advice; clinical neutrality is both a product value and a regulatory boundary.
+Where a product handles medical, financial, or otherwise regulated personal data, the general controls above need a domain pack on top: a data inventory, minimum-necessary access, de-identification for analytics, and the regulatory boundary the product must not cross.
+
+For health data specifically, read [`references/security-healthcare-pack.md`](./references/security-healthcare-pack.md). **Skip it entirely for products that hold no health data** — it is domain guidance, not a baseline.
 
 ## Intent router
 
@@ -500,7 +436,7 @@ Before finalising, silently check:
 - Did I distinguish exploitability from theoretical presence?
 - Did I order findings by severity and lead with criticals?
 - Did I propose verifiable fixes with regression guards?
-- Did I consider PHI / cross-tenant leak as the load-bearing invariant for medical data?
+- Did I name the load-bearing invariant, and over-fortify it? (For multi-tenant or special-category data, that is almost always cross-tenant isolation.)
 - Did I flag privacy / compliance dimensions, not just technical ones?
 - Did I avoid pretending automated scans are complete?
 - Did I leave the team with a sequenced remediation plan, not just a list?

@@ -4,3 +4,8 @@
 .idea/
 .vscode/
 node_modules/
+__pycache__/
+
+# Eval run artefacts: large, contain full model outputs, and are specific to
+# one run of one model. Conclusions belong in commits, not the raw transcripts.
+evals/results/
