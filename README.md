@@ -97,6 +97,24 @@ Two supporting documents make the pipeline portable:
 
 Nothing in the pipeline assumes a JavaScript toolchain, a specific agent host, or a writable cache. The worked example in the adapter is illustrative only.
 
+### Verified, not just written
+
+The pipeline has been run end to end against two purpose-built projects rather than only reviewed:
+
+| Testbed | Exercises | Result |
+|---|---|---|
+| npm project **with** an adapter — blocking drift gate, ratcheted style gate at accepted baseline 3, deliberately stale generated artefact | `run-pipeline` (Small + bump-up), `execute-chunk`, `close-chunk`, `cleanup-verify` | All correct |
+| Python/Make project with **no adapter** and no cache | the discovery fallback | All correct, zero JS assumptions |
+
+Specifically observed:
+
+- **Tier classification and bump-up.** A "one-line" schema change was correctly promoted Small → Medium, citing the rule rather than the surface size. Plans stopped for confirmation instead of proceeding.
+- **Targeted validation.** `execute-chunk` ran lint and tests but correctly skipped the build and drift gates, because the chunk didn't touch the declared risk path.
+- **Stamp discipline.** `close-chunk` re-ran the gate chain itself rather than trusting the implementer's report, then withheld the `last-gate` stamp because no state directory existed — citing the schema's availability rule.
+- **Drift handling.** `cleanup-verify` regenerated the stale artefact, reported the diff, refused to commit it, withheld the stamp, and returned `BLOCKED`. On the no-adapter project it also restored the working tree to its original state afterwards.
+- **Ratchet handling.** A permanently-failing style gate at its accepted baseline was treated as no-worse-than-baseline, not as a failure.
+- **Discovery.** With no adapter, gates were discovered from `CONTRIBUTING.md` cross-checked against the `Makefile`, and the source of each was stated.
+
 See `routing.md` for the full tier matrix and when to invoke each skill directly.
 
 ## Roles at a glance
