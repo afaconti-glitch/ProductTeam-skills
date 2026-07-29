@@ -20,7 +20,7 @@ For complex work, invoke a squad. For specialist work, invoke a role. For ambigu
 |---|---|---|
 | Product Manager | `.claude/skills/product-manager.md` | Defining value, scope, outcomes, prioritisation, PRDs, backlog structure |
 | Product Strategist | `.claude/skills/product-strategist.md` | Market positioning, vision, strategic bets, competitive framing |
-| Growth Product Marketing Manager | `.claude/skills/growth-product-marketing-manager.md` | Adoption, activation, messaging, funnel improvement, CRO, content strategy, SEO |
+| Growth Product Marketing Manager | `.claude/skills/growth-product-marketing-manager.md` | Adoption, activation, messaging, funnel improvement, CRO, content strategy, SEO, landing-page assembly and its conversion guardrails |
 | Pricing Strategist | `.claude/skills/pricing-strategist.md` | Pricing model design, tier structure, packaging, willingness-to-pay, monetisation trade-offs |
 
 ### Research, insight, and data
@@ -36,17 +36,17 @@ For complex work, invoke a squad. For specialist work, invoke a role. For ambigu
 
 | Role | Skill file | Use when |
 |---|---|---|
-| Product Designer | `.claude/skills/product-designer.md` | UX, UI, flows, interaction design, design QA, accessibility-minded design |
+| Product Designer | `.claude/skills/product-designer.md` | UX, UI, flows, interaction design, design QA, accessibility-minded design, prototype fidelity choices |
 | Content Designer | `.claude/skills/content-designer.md` | UX writing, labels, errors, onboarding, comprehension, content clarity |
-| Design Systems Specialist | `.claude/skills/design-systems-specialist.md` | Components, tokens, theming, pattern governance, interface consistency |
+| Design Systems Specialist | `.claude/skills/design-systems-specialist.md` | Components, tokens, theming, pattern governance, interface consistency, vendored component intake and retokenisation |
 | Motion Designer | `.claude/skills/motion-designer.md` | UI animation, transitions, micro-interactions, expressive and brand-led motion on marketing or showcase surfaces, cursor/hover and pointer-driven effects, ambient and particle/WebGL backgrounds, motion tokens and systems, reduced-motion alternatives, animation performance (INP, CLS, jank), motion audits, intake review of third-party or generated animated components |
-| Accessibility Specialist | `.claude/skills/accessibility-specialist.md` | WCAG-minded review, inclusive design, assistive technology risks |
+| Accessibility Specialist | `.claude/skills/accessibility-specialist.md` | WCAG-minded review, inclusive design, assistive technology risks, animated and vendored component audits |
 
 ### Engineering, delivery, and quality
 
 | Role | Skill file | Use when |
 |---|---|---|
-| Software Engineer | `.claude/skills/software-engineer.md` | Implementation, code, feasibility, technical trade-offs |
+| Software Engineer | `.claude/skills/software-engineer.md` | Implementation, code, feasibility, technical trade-offs, vendored source review |
 | Technical Architect | `.claude/skills/technical-architect.md` | System design, integration strategy, scalability, platform decisions |
 | DevOps Engineer | `.claude/skills/devops-engineer.md` | CI/CD, environments, deployment, observability, release reliability |
 | Security Specialist | `.claude/skills/security-specialist.md` | Threat modelling, security audits, RLS / auth review, privacy and DPIA, supply-chain audit, AI/LLM safety, incident readiness, vulnerability triage |
@@ -123,6 +123,19 @@ Roles: Technical Architect, Software Engineer, DevOps Engineer, Security Special
 
 Default outputs: architecture recommendation, integration approach, operational concerns, security and privacy implications, technical risks, testing approach, rollout plan.
 
+### Component Intake Squad
+
+Use when:
+- Source is being copied in from a component gallery or copy-paste library (ReactVibe, Originkit, shadcn-style registries) rather than installed as a package
+- An AI-generated or externally authored component is proposed for adoption
+- Vendored components are already in the codebase and need auditing
+
+Roles: Motion Designer (lead — owns the intake checklist where the component is animated), Accessibility Specialist, Software Engineer, Design Systems Specialist, Security Specialist (where the source is untrusted or the licence is unclear), Growth Product Marketing Manager (where the target is a marketing or conversion surface).
+
+Default outputs: adopt / adapt / decline recommendation, surface-class calibration, accessibility gaps and fixes required before merge, dependency and lifecycle review, retokenisation plan, licence and provenance record.
+
+Standing rule: vendored source is code the team now owns. Fixes never arrive from upstream, so intake is the only cheap moment to apply them.
+
 ## Delivery pipeline
 
 Use the pipeline when the work needs structured execution — not just advisory output — and you want automatic scope classification, chunk-by-chunk verification, and a final gate sweep.
@@ -176,7 +189,7 @@ Use a squad when the task touches more than one of: product value, user experien
 
 ### 3. Prefer specialist roles for narrow work
 
-Use one role when the task is clearly owned by that discipline. Examples: error message rewrite → Content Designer; component token review → Design Systems Specialist; UI animation, transition, micro-interaction, motion-token, or reduced-motion design and animation-performance review → Motion Designer; landing-page or hero motion, cursor/hover effect, animated background, or "should we use this animated component" intake → Motion Designer; SQL metric definition → Data Analyst; regression plan → QA Engineer; deployment risk → DevOps Engineer; system integration decision → Technical Architect; RLS or auth review, threat model, DPIA, dependency-vuln triage, AI safety check → Security Specialist; deep or contested research, contradiction analysis, blind-spot review → STORM Researcher; pricing model or tier design → Pricing Strategist; CRO or content strategy → Growth PMM; systematic debugging → diagnose pipeline skill; UI review before release → design-critique pipeline skill.
+Use one role when the task is clearly owned by that discipline. Examples: error message rewrite → Content Designer; component token review → Design Systems Specialist; UI animation, transition, micro-interaction, motion-token, or reduced-motion design and animation-performance review → Motion Designer; landing-page or hero motion, cursor/hover effect, animated background, or "should we use this animated component" intake → Motion Designer; retokenising a pasted component or judging its fit against the system → Design Systems Specialist; accessibility review of an animated or vendored component → Accessibility Specialist; dependency, lifecycle, and licence review of copied source → Software Engineer; assembling a landing page from component-library blocks → Growth PMM; SQL metric definition → Data Analyst; regression plan → QA Engineer; deployment risk → DevOps Engineer; system integration decision → Technical Architect; RLS or auth review, threat model, DPIA, dependency-vuln triage, AI safety check → Security Specialist; deep or contested research, contradiction analysis, blind-spot review → STORM Researcher; pricing model or tier design → Pricing Strategist; CRO or content strategy → Growth PMM; systematic debugging → diagnose pipeline skill; UI review before release → design-critique pipeline skill.
 
 ### 4. State the invoked role or squad
 

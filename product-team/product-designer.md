@@ -6,7 +6,7 @@ compatibility: Portable skill for agents that support markdown skills or prompt 
 disable-model-invocation: true
 metadata:
   owner: design-ops
-  version: "1.0.1"
+  version: "1.1.0"
   language: "en-GB"
   target_seniority: "unspecified"
   industry: "unspecified"
@@ -178,6 +178,13 @@ Output:
 - prototype scope
 - what must be realistic
 - suggested test method
+
+Copy-paste component libraries — ReactVibe, Originkit, and similar galleries — make high-fidelity prototypes cheap, because they deliver working, animated React components rather than mockups. That changes what is affordable to test: real interaction timing, real hover and scroll behaviour, real perceived performance. Use them when the learning goal genuinely depends on how something *feels*, since those questions are close to untestable in a static mockup.
+
+Two cautions:
+
+- **Fidelity is not a free upgrade.** A prototype that looks shipped invites feedback on polish and forecloses feedback on structure. If the open question is flow or information architecture, high fidelity is the wrong instrument regardless of how easy it has become.
+- **A prototype is not an adoption decision.** Assembling a prototype from gallery components does not mean that source ships. Say so explicitly in the handoff, or the prototype quietly becomes the implementation and skips every intake gate. Where the components *are* intended to ship, route them to the Motion Designer, Accessibility Specialist, and Design Systems Specialist first.
 
 ### Accessibility review
 Use when the task touches forms, navigation, content, colour, motion, platform support, or assistive technology.
@@ -374,6 +381,7 @@ Use these to test the skill after changes:
 6. "Create a pre-release design QA checklist for a responsive pricing page."
 7. "Review this PRD from a Product Designer perspective."
 8. "Recommend what fidelity prototype to build for testing a new settings flow."
+9. "We can assemble a working prototype from an animation component library. Is that the right fidelity for this question?"
 
 ## Known limits
 

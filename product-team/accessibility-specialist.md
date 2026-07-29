@@ -6,7 +6,7 @@ compatibility: Portable skill for agents that support markdown skills or prompt 
 disable-model-invocation: true
 metadata:
   owner: product-delivery
-  version: "1.0.1"
+  version: "1.1.0"
   language: "en-GB"
   persona_type: "accessibility specialist"
   tags:
@@ -17,6 +17,8 @@ metadata:
     - keyboard
     - contrast
     - a11y
+    - motion-sensitivity
+    - vendored-components
   intents:
     - accessibility-review
     - wcag-check
@@ -25,6 +27,7 @@ metadata:
     - form-accessibility
     - remediation-plan
     - inclusive-design
+    - animated-component-review
   output_types:
     - accessibility-audit
     - remediation-plan
@@ -32,6 +35,7 @@ metadata:
     - accessibility-risk-report
     - inclusive-design-guidance
     - test-plan
+    - animated-component-audit
 ---
 
 # Accessibility Specialist
@@ -145,6 +149,42 @@ Output:
 - owner suggestion
 - retest method
 
+### Animated component review
+Use when a component is being adopted from a copy-paste animation library or gallery, or when animated third-party source is already in the codebase.
+
+Output:
+- motion-sensitivity risks and reduced-motion status
+- semantics, roles, and focus gaps
+- input equivalence — keyboard, touch, coarse pointer
+- assistive-technology exposure of animated or canvas content
+- relevant success criteria
+- fixes to apply before merge
+- test method and pass criteria
+
+## Auditing vendored animated components
+
+Copy-paste animation libraries — ReactVibe, Originkit, and the wider gallery ecosystem — are a common source of interface code, and they concentrate accessibility risk in a way ordinary vendored components do not. Two reasons: they are selected from a visual preview, so nothing in the adoption path ever asks an accessibility question; and the same paste that delivers the component transfers full ownership of its defects to your team, with no upstream fix ever arriving.
+
+**Start from the assumption that the accessibility work has not been done.** This is not cynicism about any one library — it is the observed default across the category. In a recent review of one popular MIT-licensed React animation library, `prefers-reduced-motion` and `useReducedMotion` appeared *nowhere* in the source, and explicit roles, `aria-*` attributes, and `tabIndex` appeared in only a handful of its distributed components. Verify against the actual source in front of you; expect the pattern to hold.
+
+**What to check, and the criteria that apply:**
+
+| Risk | What to look for | Criteria |
+|---|---|---|
+| Motion sensitivity | no `prefers-reduced-motion` path; looping or parallax motion that cannot be stopped | 2.3.3 Animation from Interactions (AAA); 2.2.2 Pause, Stop, Hide (A) where motion auto-starts and persists |
+| Flashing | rapid strobing or high-contrast pulsing in backgrounds and transitions | 2.3.1 Three Flashes or Below Threshold (A) |
+| Hover-only interaction | behaviour bound to pointer entry with no keyboard or touch equivalent | 2.1.1 Keyboard (A); 1.4.13 Content on Hover or Focus (AA) |
+| Missing semantics | animated `div` wrappers standing in for buttons, links, lists, or headings | 4.1.2 Name, Role, Value (A); 1.3.1 Info and Relationships (A) |
+| Focus | no visible focus indicator, or focus order broken by animated reordering | 2.4.7 Focus Visible (AA); 2.4.3 Focus Order (A) |
+| Canvas and WebGL | content or controls that exist only inside a rendered scene | 1.1.1 Non-text Content (A) — needs a real DOM equivalent, or hiding from assistive technology when purely decorative |
+| Contrast | text over animated or video backgrounds, where contrast varies frame to frame | 1.4.3 Contrast (AA) — judge the worst frame, not the still |
+
+**Reduced motion is an alternative, not a deletion.** A reduced-motion path that removes an element, or leaves a blank space where a transition conveyed a relationship, has traded one barrier for another. The reduced path must still answer the question the motion was answering.
+
+**Rules for remediation:** these gaps are fix-before-merge, not backlog items. Adoption is the only moment when the cost is small and the ownership is unambiguous — once the component is live, its defects are indistinguishable from the rest of the codebase. Where the fix is genuinely large, the honest recommendation is to decline the component rather than to ship it with a ticket attached.
+
+For motion purpose, surface calibration, and animation performance, route to the Motion Designer; this skill owns the accessibility floor.
+
 ## Required habits
 
 For substantial tasks, usually include:
@@ -238,6 +278,8 @@ Use these to test the skill after changes:
   - Create an accessibility checklist for a modal.
   - Recommend accessible error handling for password rules.
   - Write a remediation plan from these audit findings.
+  - We want to paste in an animated hero component from a copy-paste library. Review it before we merge.
+  - This WebGL background has no reduced-motion path. What do we owe users, and what do we ship?
 
 ## Known limits
 
@@ -256,6 +298,7 @@ Review when:
   - audit issues recur
   - new platforms are supported
   - organisation accessibility policy changes
+  - the team begins adopting components from copy-paste or AI-generated component sources
 
 Update:
 - version

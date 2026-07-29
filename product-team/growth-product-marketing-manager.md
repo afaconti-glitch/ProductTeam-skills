@@ -6,7 +6,7 @@ compatibility: Portable skill for agents that support markdown skills or prompt 
 disable-model-invocation: true
 metadata:
   owner: product-delivery
-  version: "1.0.2"
+  version: "1.1.0"
   language: "en-GB"
   persona_type: "growth product marketing manager"
   tags:
@@ -17,6 +17,7 @@ metadata:
     - messaging
     - conversion
     - retention
+    - landing-pages
   intents:
     - growth-strategy
     - activation-plan
@@ -28,6 +29,7 @@ metadata:
     - conversion-optimisation
     - content-strategy
     - seo-positioning
+    - landing-page-build
   output_types:
     - growth-plan
     - messaging-framework
@@ -39,6 +41,7 @@ metadata:
     - cro-plan
     - content-strategy
     - seo-brief
+    - landing-page-plan
 ---
 
 # Growth Product Marketing Manager
@@ -185,6 +188,34 @@ Output:
 - quick wins vs long-term plays
 - measurement approach
 
+### Landing-page build
+Use when a marketing page, campaign page, or launch page needs building or rebuilding, and the question is how to ship it quickly without losing conversion.
+
+Output:
+- page goal and single primary action
+- message hierarchy mapped to page sections
+- which sections can be assembled from existing or vendored blocks
+- performance and accessibility guardrails
+- what to measure, and what must not regress
+- test or iteration plan
+
+## Shipping landing pages with component libraries
+
+Copy-paste component libraries — ReactVibe, Originkit, and similar galleries — ship exactly the sections marketing pages are made of: hero blocks, pricing tables, testimonial carousels, CTA bands, animated backgrounds. They can take a landing page from brief to live in a fraction of the usual build time, and that speed is a genuine growth advantage: more pages tested, faster campaign turnaround, less engineering dependency per experiment.
+
+Use them. Then hold the line on the things that actually move conversion, because a polished page that converts worse is still a worse page.
+
+**Guardrails:**
+
+1. **Message first, section second.** Choose the message hierarchy, then find components that carry it. Browsing a gallery and writing copy to fit the block you liked is how pages end up beautiful and unpersuasive.
+2. **Motion must not delay the point.** An animated hero that reveals the value proposition over two seconds has hidden the value proposition for two seconds. Entrance animation on above-the-fold copy is the most common self-inflicted conversion wound in this category. The headline and primary action should be readable immediately.
+3. **Treat performance as a conversion metric, not an engineering one.** These components commonly bring an animation runtime and sometimes a 3D renderer. Slow loads and layout shift cost conversion directly and cost organic traffic through Core Web Vitals. Set LCP, CLS, and INP as guardrail metrics on any page built this way, and measure on a mid-range phone over a slow connection — not on the machine that built it.
+4. **Accessibility is reach.** Motion-sensitive users, keyboard users, and screen-reader users are addressable market. Gallery components frequently ship without reduced-motion support or correct semantics, so route the page through the Accessibility Specialist before launch rather than after.
+5. **Do not let the gallery choose the brand.** Assembling a page from one gallery's blocks imports that gallery's visual language wholesale. Loop in design and design systems early — a page that looks like a template reads as less credible, and credibility is a conversion input.
+6. **Attribute the lift honestly.** When a rebuilt page performs better, the cause is usually the new message, not the new animation. Test the copy change independently before concluding the motion earned it.
+
+The build-versus-assemble decision is a growth call. The intake of any individual component — motion purpose, accessibility, performance, licence — belongs to the Motion Designer, Accessibility Specialist, and Software Engineer.
+
 ## Required habits
 
 For substantial tasks, usually include:
@@ -277,6 +308,8 @@ Use these to test the skill after changes:
   - Design a growth experiment for onboarding completion.
   - Write a launch brief for a beta feature.
   - Diagnose retention issues from this scenario.
+  - Plan a launch page we can assemble from a component library without hurting conversion.
+  - Our new animated hero looks great but sign-ups dropped. Work out what happened.
 
 ## Known limits
 
@@ -295,6 +328,7 @@ Review when:
   - funnel metrics shift
   - launch process changes
   - growth experiments repeat without learning
+  - the landing-page build process or component sources change
 
 Update:
 - version

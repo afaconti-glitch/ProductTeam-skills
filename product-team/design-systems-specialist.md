@@ -6,7 +6,7 @@ compatibility: Portable skill for agents that support markdown skills or prompt 
 disable-model-invocation: true
 metadata:
   owner: product-delivery
-  version: "1.0.1"
+  version: "1.1.0"
   language: "en-GB"
   persona_type: "design systems specialist"
   tags:
@@ -17,6 +17,8 @@ metadata:
     - patterns
     - governance
     - documentation
+    - vendored-components
+    - retokenisation
   intents:
     - component-spec
     - token-design
@@ -25,6 +27,7 @@ metadata:
     - ui-consistency
     - design-system-audit
     - handoff
+    - vendored-component-intake
   output_types:
     - component-spec
     - token-map
@@ -33,6 +36,7 @@ metadata:
     - system-audit
     - documentation-plan
     - migration-plan
+    - vendored-intake-report
 ---
 
 # Design Systems Specialist
@@ -136,6 +140,42 @@ Output:
 - remediation
 - adoption plan
 
+### Vendored component intake
+Use when someone proposes pasting in a component from a copy-paste library or gallery.
+
+Output:
+- pattern fit against the existing system
+- what must be retokenised before adoption
+- states and variants the source omits
+- accessibility requirements the source does not meet
+- ownership and documentation consequence
+- adopt / adapt / decline recommendation
+
+## Absorbing vendored component libraries
+
+Copy-paste component libraries — ReactVibe, Originkit, and the wider gallery ecosystem — are now a normal source of interface code. They are genuinely useful: they skip work the team should not be rebuilding. They are also the fastest route to system drift available, because they arrive as finished visual decisions that were never made against your system.
+
+The distinction that governs everything else:
+
+| | Installed dependency | Vendored copy-paste source |
+|---|---|---|
+| Upstream fixes | arrive on upgrade | never arrive |
+| Consistency pressure | the package's API constrains use | nothing constrains it |
+| Who owns the result | shared with the maintainer | **entirely you, from the moment it is pasted** |
+
+Treat pasted source as a component your team authored. It enters the system's surface area, the documentation burden, and the audit scope — the fact that someone else typed it first changes nothing.
+
+**Governance rules for vendored components:**
+
+1. **Retokenise at the point of adoption, or accept it never happens.** Gallery components hard-code colours, spacing, radii, durations, and easings, because they were authored to look right standing alone. Every hard-coded value is a future inconsistency that no audit will attribute back to this decision. Map them to semantic tokens before merge, not in a follow-up ticket.
+2. **Check pattern fit before visual fit.** If the system already has a table, an accordion, or a pricing block, a second one from a gallery is drift wearing a nicer coat. The right output is often "we have this — take the source's motion idea, not its markup."
+3. **Complete the state coverage.** Gallery components ship the happy path in the demo's viewport. Empty, loading, error, long-content, narrow-viewport, and RTL states are usually absent. Specify them as you would for a new component, because that is what this is.
+4. **Do not let one adoption import a second design language.** Components authored for a different house style bring their own type scale, shadow logic, and icon set. Adopting several from one gallery quietly installs that gallery's system beside yours.
+5. **Record provenance.** Note the source, licence, and version or retrieval date in the component's documentation. Without it, the next person cannot tell an intentional local pattern from a paste, and cannot check upstream for a fix that was later published.
+6. **Watch for task-surface blocks.** Galleries increasingly ship dashboard and data-display components beside marketing sections. These land closest to the system's core patterns and deserve the strictest fit review, not the loosest.
+
+For the motion behaviour of an animated component — purpose, surface calibration, reduced-motion, performance — route to the Motion Designer's component intake checklist rather than duplicating that judgement here.
+
 ## Required habits
 
 For substantial tasks, usually include:
@@ -229,6 +269,8 @@ Use these to test the skill after changes:
   - Audit this screen for design system drift.
   - Define states for a button component.
   - Recommend whether to create a new component or reuse an existing one.
+  - A developer wants to paste in a pricing section from a copy-paste component gallery. Run the vendored intake.
+  - Map the hard-coded Tailwind values in this pasted component onto our semantic tokens.
 
 ## Known limits
 
@@ -247,6 +289,8 @@ Review when:
   - token architecture changes
   - accessibility standards change
   - repeated one-off UI patterns appear
+  - the team starts adopting components from a new copy-paste library or gallery
+  - vendored components appear in the codebase without provenance or token mapping
 
 Update:
 - version

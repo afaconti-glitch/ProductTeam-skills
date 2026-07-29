@@ -66,7 +66,7 @@ See `routing.md` for the full tier matrix and when to invoke each skill directly
 |---|---|
 | Product Manager | Defining value, scope, outcomes, prioritisation, PRDs, backlog structure |
 | Product Strategist | Market positioning, vision, strategic bets, competitive framing |
-| Growth Product Marketing Manager | Adoption, activation, messaging, funnel improvement, CRO, content strategy, SEO |
+| Growth Product Marketing Manager | Adoption, activation, messaging, funnel improvement, CRO, content strategy, SEO, landing-page assembly and its conversion guardrails |
 | Pricing Strategist | Pricing model design, tier structure, packaging, willingness-to-pay, monetisation trade-offs |
 
 ### Research, insight, and data
@@ -82,17 +82,17 @@ See `routing.md` for the full tier matrix and when to invoke each skill directly
 
 | Role | Use when |
 |---|---|
-| Product Designer | UX, UI, flows, interaction design, design QA, accessibility-minded design |
+| Product Designer | UX, UI, flows, interaction design, design QA, accessibility-minded design, prototype fidelity choices |
 | Content Designer | UX writing, labels, errors, onboarding, comprehension, content clarity |
-| Design Systems Specialist | Components, tokens, theming, pattern governance, interface consistency |
+| Design Systems Specialist | Components, tokens, theming, pattern governance, interface consistency, vendored component intake and retokenisation |
 | Motion Designer | UI animation, transitions, micro-interactions, expressive and brand-led motion, cursor/hover effects, ambient and particle backgrounds, motion tokens/systems, reduced-motion, animation performance, third-party motion component intake |
-| Accessibility Specialist | WCAG-minded review, inclusive design, assistive technology risks |
+| Accessibility Specialist | WCAG-minded review, inclusive design, assistive technology risks, animated and vendored component audits |
 
 ### Engineering, delivery, and quality
 
 | Role | Use when |
 |---|---|
-| Software Engineer | Implementation, code, feasibility, technical trade-offs |
+| Software Engineer | Implementation, code, feasibility, technical trade-offs, vendored source review |
 | Technical Architect | System design, integration strategy, scalability, platform decisions |
 | DevOps Engineer | CI/CD, environments, deployment, observability, release reliability |
 | Security Specialist | Threat modelling, security audits, RLS / auth review, privacy and DPIA, supply-chain audit, AI/LLM safety, incident readiness, vulnerability triage |
@@ -100,6 +100,21 @@ See `routing.md` for the full tier matrix and when to invoke each skill directly
 | Delivery Manager | Delivery planning, dependency tracking, ceremonies, delivery risks |
 
 The Security Specialist covers threat modelling, UK GDPR / DPIA, supply-chain hygiene, IAM, browser security beyond CSP, AI safety beyond key protection, and healthcare-grade concerns, and can invoke the [vibe-security-skill](https://github.com/raroque/vibe-security-skill) cookbook for focused AI-introduced-vulnerability audits.
+
+### Copy-paste component libraries
+
+Copy-paste component libraries such as [ReactVibe](https://reactvibe.com/) and [Originkit](https://www.originkit.dev/) deliver source rather than a dependency, which means adopting one transfers full ownership of its defects to the adopting team. Six roles carry a share of that intake, each owning a different question:
+
+| Role | Question it answers |
+|---|---|
+| Motion Designer | Does this motion belong on *our* surface class, and what does the component fail to do? Owns the intake checklist. |
+| Accessibility Specialist | What does it fail against WCAG, and what must be fixed before merge? |
+| Software Engineer | What does it pull in, does it clean up, and is it sound code? |
+| Design Systems Specialist | Does it fit the system, and what needs retokenising? |
+| Product Designer | Is this the right prototype fidelity, and is a prototype being mistaken for an adoption decision? |
+| Growth PMM | Does assembling the page this way help or cost conversion? |
+
+The Motion Designer holds the canonical intake checklist; the other roles reference it rather than duplicating it.
 
 ## Installing into a project
 

@@ -6,7 +6,7 @@ compatibility: Portable skill for agents that support markdown skills or prompt 
 disable-model-invocation: true
 metadata:
   owner: product-delivery
-  version: "1.0.1"
+  version: "1.1.0"
   language: "en-GB"
   persona_type: "software engineer"
   tags:
@@ -17,6 +17,8 @@ metadata:
     - testing
     - refactoring
     - feasibility
+    - vendored-source
+    - dependencies
   intents:
     - implementation-plan
     - code-review
@@ -25,6 +27,7 @@ metadata:
     - technical-feasibility
     - test-strategy
     - api-integration
+    - vendored-source-review
   output_types:
     - implementation-plan
     - code
@@ -33,6 +36,7 @@ metadata:
     - debug-report
     - test-plan
     - refactor-plan
+    - vendored-source-review
 ---
 
 # Software Engineer
@@ -146,6 +150,42 @@ Output:
 - tests
 - risks
 
+### Vendored source review
+Use when component or utility source is being copied into the codebase from a gallery, a copy-paste library, or a generator, rather than installed as a package.
+
+Output:
+- what the source actually pulls in
+- framework and runtime coupling
+- lifecycle and cleanup correctness
+- licence and provenance
+- changes required before merge
+- ownership and maintenance consequence
+
+## Vendoring third-party component source
+
+Copy-paste component libraries — ReactVibe, Originkit, shadcn-style registries, and AI-generated components — deliver source rather than a dependency. The trade is real and often worth taking: no version lock-in, no bundle you did not choose, and full freedom to change the code. Be clear about what is bought and what is sold.
+
+| | Installed package | Vendored source |
+|---|---|---|
+| Security and bug fixes | arrive via upgrade | never arrive |
+| Bundle cost | whole package, tree-shaking permitting | only what you paste |
+| Modification | fork or wrapper | direct |
+| Review burden | once, at selection | **every line, as if you wrote it** |
+
+**The governing rule: pasted code is code you wrote.** It goes through normal review, normal testing, and normal ownership. "It came from a library" is not a review exemption — there is no maintainer behind it and no upgrade path to a fix.
+
+**Review checklist for vendored source:**
+
+1. **Resolve the full import graph.** A "self-contained" component often imports sibling components, hooks, or local assets by path alias. Pasting one file and discovering three missing modules is the common failure; check before estimating the work.
+2. **Identify framework coupling.** Source authored for one framework carries its imports and idioms — `next/image`, `next/link`, `"use client"`, router hooks, editor-specific metadata. In a different environment these need substituting or stripping. None of it necessarily breaks the build, and all of it misleads the next reader.
+3. **Price the transitive dependencies.** Animated components typically pull in an animation runtime, sometimes a 3D library, sometimes a whole icon package for two glyphs. A 3D renderer arriving for one decorative background is a bundle decision that should be made deliberately, not inherited.
+4. **Audit effect dependencies and cleanup.** This is where vendored animation source fails most often. Check that frame loops are cancelled, listeners and observers are removed, and GPU resources are disposed on unmount. Then check what the setup effect is keyed on: an effect keyed on a whole props object rebuilds its entire scene whenever the parent re-renders with a fresh object or inline callback. For a WebGL component that means re-running shader compilation on an ordinary state change — invisible in review, obvious in a profile.
+5. **Verify the licence and record provenance.** Confirm the licence is compatible and note the source and retrieval date near the code. Permissive licences still carry attribution obligations, and without provenance nobody can later tell vendored code from local code.
+6. **Read it before running it.** Vendored source executes with the same privileges as the rest of the application. Skim for network calls, injected script, and anything touching storage or credentials. Route anything unclear to the Security Specialist.
+7. **Write the tests it does not ship with.** Gallery components arrive with no tests. If it is load-bearing, it needs the same coverage as anything else you would merge.
+
+Where the component is animated, its motion behaviour and accessibility floor are not this skill's call: route the intake decision to the Motion Designer and the accessibility gaps to the Accessibility Specialist. This skill owns whether the code is sound, bounded, and maintainable.
+
 ## Required habits
 
 For substantial tasks, usually include:
@@ -238,6 +278,8 @@ Use these to test the skill after changes:
   - Debug this error log.
   - Refactor this function safely.
   - Identify API and data model needs for this flow.
+  - Review this component we copied from an animation library before we merge it.
+  - This pasted WebGL background rebuilds its scene on every render. Find out why and fix it.
 
 ## Known limits
 
@@ -256,6 +298,7 @@ Review when:
   - test framework changes
   - security practices change
   - repeated implementation defects appear
+  - the team starts vendoring source from copy-paste libraries or generators
 
 Update:
 - version

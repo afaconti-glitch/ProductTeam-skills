@@ -6,7 +6,7 @@ compatibility: Portable skill for agents that support markdown skills or prompt 
 disable-model-invocation: true
 metadata:
   owner: product-delivery
-  version: "1.2.0"
+  version: "1.3.0"
   language: "en-GB"
   persona_type: "functional front-end motion designer"
   tags:
@@ -387,6 +387,8 @@ Vendored source is the common model for animated component galleries, and the ow
 
 **Standing rule:** a component fails intake on any gap in accessibility, lifecycle, or licence. Gaps in system fit are a fix-on-adoption task — retokenise timings at the point of adoption, because it will not happen later.
 
+**Watch the catalogue boundary.** Motion galleries increasingly ship task-surface blocks — data tables, charts, activity feeds, dashboard shells — beside their marketing sections, under one catalogue and one house style. The categories are presented as equivalent; under this skill they are not. A gallery's motion vocabulary is tuned to win attention on a showcase page, and that vocabulary is a defect on a surface people use all day. Classify the surface from your own product before adopting, and expect to strip motion out of task-surface blocks rather than merely retiming it.
+
 **On AI-assisted and MCP-based delivery.** Several libraries now expose their catalogue over MCP or generate stack-adapted source on request, which makes adoption nearly frictionless. Frictionless adoption makes the checklist above *more* necessary, not less: generated or auto-adapted source arrives unreviewed, may be adapted incorrectly for the target framework, and carries none of the surface-class judgement this skill exists to apply. Review generated motion code exactly as you would a pull request from an unfamiliar contributor.
 
 ## Anti-patterns to flag
@@ -517,6 +519,22 @@ Reference material only — none of it substitutes for the gates in this skill. 
   - **Choosing between them:** if the target is Framer, copy-to-Framer is the intended path. If the target is React, Vite, or Next, prefer MCP — it strips the Framer bindings that copy-paste leaves behind. Copying raw source into a non-Framer project means you inherit the shim and the annotations, and you own removing them.
   - **MCP endpoint:** `https://mcp.originkit.dev/mcp` (note the separate subdomain; it is not under `www`). Tools: `list_components`, `get_component`, `search`, `fetch`. Custom connectors need **no API key** — paste the endpoint and approve the OAuth sign-in (scope `components:read`). An API key is only for editor/CLI commands: `claude mcp add originkit https://mcp.originkit.dev/mcp --transport http --header "Authorization: Bearer <key>"`. Fetches draw on a shared daily quota. Setup: [integrations page](https://www.originkit.dev/integrations?tab=mcp).
   - **Standing caution — stack adaptation is not review.** Neither copying nor MCP adaptation checks the component against your surface class, motion tokens, or accessibility floor. Every path lands unreviewed source in your repo, so every path gets the intake checklist. The MCP path is the most frictionless and therefore the easiest to skip review on.
+- [ReactVibe](https://reactvibe.com/) — an MIT-licensed React animation library of copy-paste components ([source](https://github.com/siddhantmani/reactvibe)). Built on `framer-motion`, Three.js, and Tailwind, authored React-first for Next.js. Useful as an accelerator on marketing surfaces and as a **reference for WebGL ambient-background technique**. Like all vendored source, it arrives as code you own.
+  - **Catalogue spread — and why it matters here.** Unlike galleries that stop at marketing blocks, ReactVibe ships both showcase-surface work (WebGL backgrounds, hero sections, pricing, testimonials, CTAs, text motion) *and* task-surface work (data tables, charts, activity feeds, dashboard blocks). The categories look equivalent in the catalogue; they are not equivalent under this skill. A component demoed on a dark showcase page carries showcase-grade motion. Dropping that motion onto a dense internal table is exactly the surface-class error the calibration section exists to prevent. **Re-derive the surface class from your product, never from the category name.**
+  - **Delivery is copy-paste only** — no CLI, no npm package, no MCP endpoint, no published registry. There is no adaptation step to lean on, which cuts both ways: nothing silently rewrites the source for you, and nothing strips its origin either. What you paste is what the library author wrote for a Next.js app.
+  - **What arrives with it:** `framer-motion` on most components, `three` on the backgrounds, plus icon packages. Some components import `next/image` and `next/link` — outside Next these need substituting. Others import sibling components and local assets by path alias rather than standing alone, so "self-contained" holds per-category, not universally. Resolve the import graph before assuming a single file is the whole component.
+  - **Known intake gaps** (verified against the source, and the reason the checklist above is not optional here):
+
+| Gap | State at time of writing | What you own on adoption |
+|---|---|---|
+| Reduced motion | no `prefers-reduced-motion` or `useReducedMotion` anywhere in the repository | author the reduced path for every component you adopt — assume none exists |
+| Offscreen / background pause | no `IntersectionObserver`; effectively no `visibilitychange` gating | add the lifecycle contract before shipping any WebGL background |
+| Teardown | **present and correct** — backgrounds cancel their frame loop and dispose renderer, controls, and composer on unmount | verify it survives your edits |
+| Semantics and focus | `role`, `aria-*`, and `tabIndex` appear in only a handful of distributed components; several interactions are hover-entry only | add roles, focus order, visible focus, and a non-hover path |
+| Tokens | timings, easings, and colours are hard-coded in component source | retokenise at adoption, or accept permanent drift |
+
+  - **One concrete performance trap.** Some background components key their setup effect on the whole props object. Passing an inline object or a fresh callback from the parent tears down and rebuilds the entire WebGL scene on every parent render — shader recompilation included. Memoise the props, or narrow the dependency list to the values the scene actually reads, and confirm with a profile rather than by eye.
+  - **Standing caution.** A capability prop such as a `quality` setting is a *control*, not a gate — it does nothing until you wire it to real device signals. Shipping the default on a mid-range phone is a decision you are making whether or not you make it deliberately.
 - Other copy-paste animated component galleries — same intake rules apply. Treat every gallery preview as a demo on a showcase surface, which is rarely the surface you are building.
 
 Use these as vocabulary and starting points. The judgement about purpose, surface class, accessibility, and performance stays with this skill.
