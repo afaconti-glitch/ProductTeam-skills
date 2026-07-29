@@ -6,7 +6,7 @@ compatibility: Portable skill for agents that support markdown skills or prompt 
 disable-model-invocation: true
 metadata:
   owner: product-delivery
-  version: "1.0.0"
+  version: "1.0.1"
   language: "en-GB"
   persona_type: "storm researcher"
   tags:
@@ -279,6 +279,17 @@ Revise the research after this review. Do not expose hidden chain-of-thought. In
   - Include credible dissent when it materially changes the interpretation or decision.
   - Note when accessible evidence is geographically or culturally narrow.
   - Distinguish absence of evidence from evidence of absence.
+
+### Community channels discover; official artefacts verify
+
+Forums, social platforms and practitioner communities are a legitimate and often superior way to *find* candidates, failure modes, migration accounts and edge cases that official material omits. They are not evidence of a claim's truth, and they should never be the last step.
+
+  - Treat community discussion as lead generation: extract names and the specific behaviour praised or criticised, then verify each against the authoritative artefact — the primary source, official record, repository, or licence.
+  - Capture author, employment and affiliate disclosures where present, and note their absence where promotion is plausible.
+  - Collapse renamed projects, forks and successors before comparing, or the same thing will be counted twice under different names and its history will look shorter than it is.
+  - Repeated complaints are a reason to inspect the record more closely, not a verdict. Investigate the underlying change; do not let volume of grievance substitute for evidence.
+  - Record where coverage was blocked or incomplete — a platform that could not be searched is a stated limitation, not a silent gap.
+  - A discovery source must never directly trigger an action. Findings go through verification and a human decision first.
 
 ## Tool integration contract
 
