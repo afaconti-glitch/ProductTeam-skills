@@ -138,10 +138,19 @@ def reveal(args):
     print(f"\n  role preferred     {score['role']}/{n}")
     print(f"  no-role preferred  {score['no-role']}/{n}")
     print(f"  tie                {score['tie']}/{n}")
-    if score["tie"] >= n / 2:
-        print("\n  Mostly ties: on these tasks the role is not changing the work.")
-    elif score["no-role"] > score["role"]:
+    # Read wins and losses before ties. An early version fired "mostly ties: the
+    # role is not changing the work" on a 2 win / 0 loss / 2 tie result, which
+    # is a clearly favourable outcome.
+    if score["no-role"] > score["role"]:
         print("\n  The role is making outputs worse on these tasks. Investigate before shipping.")
+    elif score["role"] > score["no-role"]:
+        never_worse = " and never lost" if score["no-role"] == 0 else ""
+        print(f"\n  The role won more often than it lost{never_worse}. Ties mean it was")
+        print("  neutral there, not harmful — worth knowing which tasks those were.")
+    elif score["tie"] == n:
+        print("\n  Every task tied: on this sample the role is not changing the work.")
+    else:
+        print("\n  Wins and losses are level. No signal either way on this sample.")
     print(f"\n  n={n} with one judge. A strong signal, not a statistic.")
 
 

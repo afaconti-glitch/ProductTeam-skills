@@ -138,6 +138,19 @@ The Security Specialist covers threat modelling, UK GDPR / DPIA, supply-chain hy
 
 ## Installing into a project
 
+### Quickest — the install script
+
+```bash
+git clone https://github.com/afaconti-glitch/ProductTeam-skills.git
+./ProductTeam-skills/install.sh /path/to/your-project
+```
+
+It copies the roles, pipeline and references into `.claude/skills/`, appends the routing brain to the project's `CLAUDE.md` **with the paths already rewritten**, updates `.gitignore`, and seeds a pipeline adapter template. Add `--submodule` to pin to a tag instead of copying.
+
+Re-running it updates the routing block in place between its markers, leaving everything you wrote above it untouched. Verified on both fresh install and update.
+
+The manual routes below do the same thing by hand; the path rewriting in step 4 is the part that most often goes wrong.
+
 ### Option A — Git submodule (recommended)
 
 A submodule pins the consuming project to a specific tag, makes updates deliberate (`git submodule update --remote`), and keeps the role files in one canonical place.
