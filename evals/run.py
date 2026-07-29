@@ -61,9 +61,17 @@ def claude(prompt, system=None, model=DEFAULT_MODEL):
     except subprocess.TimeoutExpired:
         return None, f"timeout after {TIMEOUT}s"
 
-    blob = ((r.stderr or "") + (r.stdout or "")).lower()
-    if any(s in blob for s in INFRA_SIGNS):
-        raise Infra(((r.stderr or r.stdout) or "").strip()[:300])
+    err_blob = (r.stderr or "").lower()
+    out = (r.stdout or "").strip()
+
+    # Match infra signs in stderr always, but in stdout only for a short
+    # response. CLI failures are terse; model answers are long and may
+    # legitimately discuss authentication, rate limits or expired sessions.
+    # Scanning full stdout aborted a real run because a Product Manager answer
+    # about a Salesforce integration mentioned one of these phrases.
+    if any(s in err_blob for s in INFRA_SIGNS) or (
+            len(out) < 200 and any(s in out.lower() for s in INFRA_SIGNS)):
+        raise Infra((r.stderr or out).strip()[:300])
     if r.returncode != 0:
         return None, (r.stderr or "").strip()[:400] or f"exit {r.returncode}"
     if not r.stdout.strip():
