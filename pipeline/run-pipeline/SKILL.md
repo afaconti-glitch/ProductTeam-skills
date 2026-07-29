@@ -21,17 +21,17 @@ You are the delivery-pipeline router. You take any coding request — from a one
 
 You compose atomic skills; you do not re-implement them. The atomic skills are:
 
-- [`requirements-generator`](./requirements-generator.md) — lightweight code-task intake.
-- [`product-designer`](../product-team/product-designer.md) — heavyweight discovery (research, journeys, visual critique). Escalation only.
-- [`shape-task`](./shape-task.md) — brief → requirements + strategy + chunks.
-- [`execute-chunk`](./execute-chunk.md) — implement one chunk safely.
-- [`close-chunk`](./close-chunk.md) — verify one chunk's closure decision.
-- [`cleanup-verify`](./cleanup-verify.md) — post-run regenerate/build/gate/test sweep.
+- [`requirements-generator`](../requirements-generator/SKILL.md) — lightweight code-task intake.
+- the `product-designer` role skill — heavyweight discovery (research, journeys, visual critique). Escalation only.
+- [`shape-task`](../shape-task/SKILL.md) — brief → requirements + strategy + chunks.
+- [`execute-chunk`](../execute-chunk/SKILL.md) — implement one chunk safely.
+- [`close-chunk`](../close-chunk/SKILL.md) — verify one chunk's closure decision.
+- [`cleanup-verify`](../cleanup-verify/SKILL.md) — post-run regenerate/build/gate/test sweep.
 
 Two documents define everything project-specific. Read them before Phase C:
 
-- [`project-adapter.md`](./project-adapter.md) — commands, gate chain, risky paths, host integrations. Resolved from `.claude/pipeline-adapter.md`, or discovered from the repository when absent.
-- [`state-schema.md`](./state-schema.md) — the shared state contract, and how to degrade when state is unavailable.
+- [`project-adapter.md`](../project-adapter.md) — commands, gate chain, risky paths, host integrations. Resolved from `.claude/pipeline-adapter.md`, or discovered from the repository when absent.
+- [`state-schema.md`](../state-schema.md) — the shared state contract, and how to degrade when state is unavailable.
 
 Below, `<lint>`, `<test.affected>`, `<test>` and similar are placeholders for commands you resolved from the adapter. They are never literal. `<cache>/` is the state directory the adapter declares.
 
@@ -126,7 +126,7 @@ For requests classified Small (one narrow change, no contract/schema/migration/i
 1. **Skip the state file.** Do not write to `<cache>/pipeline.json`. Small fixes shouldn't pollute pipeline state.
 2. **Read `<cache>/last-gate.json`.** If `scope: "full", success: true, at` is within 240 s, you may inherit that stamp; otherwise plan to validate at the end.
 3. **Inspect minimally** — Read or Grep the immediately relevant files. Don't dispatch an inspection sub-agent for Small work.
-4. **Apply the change** following [`execute-chunk`](./execute-chunk.md) — same scope-guard rules apply. If mid-flight the change reveals a bigger surface than declared, **stop**, return to Phase B, and re-classify (likely Medium). Do not silently widen.
+4. **Apply the change** following [`execute-chunk`](../execute-chunk/SKILL.md) — same scope-guard rules apply. If mid-flight the change reveals a bigger surface than declared, **stop**, return to Phase B, and re-classify (likely Medium). Do not silently widen.
 5. **Validate, narrowly:** scoped `<lint>` plus the most-affected test invoked directly. Skip the full gate chain unless the change touched a `paths.risk` glob — those gates always run when their scope is touched.
 6. **Report a 5-line summary**: what changed, files touched, validation outcome, any residual risk. No multi-section report; no independent review; no cleanup-verify.
 
@@ -137,13 +137,13 @@ If the change touched any file that triggers a bump-up rule, Small was the wrong
 For requests classified Medium (one feature slice, 1–3 chunks).
 
 1. **Initialise state.** Read `<cache>/pipeline.json`; if a prior run is `executing`/`shaping` and on a different task, warn the user and ask whether to resume, discard, or append. Otherwise reset: `run.id = "pipeline-<ISO-now>"`, `run.task` = raw request, `run.startedAt`, `run.status = "shaping"`, `run.tier`, `chunks[]` cleared. If state is unavailable or unwritable, note it once and continue without persistence.
-2. **Phase M1 — Requirements.** Adopt the [`requirements-generator`](./requirements-generator.md) persona. Produce a confirmation-ready brief. Wait for `approve` (with or without edits). Persist into `designBrief`.
-3. **Phase M2 — Shape.** Run [`shape-task`](./shape-task.md) using the confirmed brief as input. Land `requirements`, `strategy`, and `chunks[]` (each `status: "pending"`).
+2. **Phase M1 — Requirements.** Adopt the [`requirements-generator`](../requirements-generator/SKILL.md) persona. Produce a confirmation-ready brief. Wait for `approve` (with or without edits). Persist into `designBrief`.
+3. **Phase M2 — Shape.** Run [`shape-task`](../shape-task/SKILL.md) using the confirmed brief as input. Land `requirements`, `strategy`, and `chunks[]` (each `status: "pending"`).
 4. **Skip Phase 3 (inspection) and Phase 4 (architect plan) by default.** Read the relevant files inline as the chunks need them — Medium scope means the cost of two sub-agent dispatches outweighs the grounding signal. If the user opted in via `+explore` and the adapter declares an inspection sub-agent, dispatch it once before Phase M3 and persist into `repoFindings`.
 5. **Phase M3 — Per-chunk loop.** For each chunk in order:
-   - Run [`execute-chunk`](./execute-chunk.md). Per-chunk validation is scoped `<lint>` + `<test.affected>` + any gate whose scope the chunk touched.
-   - Run [`close-chunk`](./close-chunk.md). On PASS continue; on PASS_WITH_NOTES continue if downstream is unaffected; on FAIL stop with a blocker summary.
-6. **Phase M4 — Cleanup-verify.** Run [`cleanup-verify`](./cleanup-verify.md). It owns the final `scope: "full"` stamp on `last-gate.json` if everything passed.
+   - Run [`execute-chunk`](../execute-chunk/SKILL.md). Per-chunk validation is scoped `<lint>` + `<test.affected>` + any gate whose scope the chunk touched.
+   - Run [`close-chunk`](../close-chunk/SKILL.md). On PASS continue; on PASS_WITH_NOTES continue if downstream is unaffected; on FAIL stop with a blocker summary.
+6. **Phase M4 — Cleanup-verify.** Run [`cleanup-verify`](../cleanup-verify/SKILL.md). It owns the final `scope: "full"` stamp on `last-gate.json` if everything passed.
 7. **Skip independent review by default.** If the adapter declares one and the user opted in via `+review`, run it against the cumulative diff (same protocol as Large flow Phase 9). Otherwise emit the wrap-up summary and stop.
 
 If during Phase M3 a chunk's scope guard fires repeatedly, treat it as a misclassification — stop, re-surface as Large in Phase B, and resume from there.
@@ -199,7 +199,7 @@ Rules across all tiers:
 
 # State lifecycle
 
-You own `<cache>/pipeline.json` for Medium and Large flows; Small flow does not touch it. The full contract, including how to degrade when state is unavailable, is in [`state-schema.md`](./state-schema.md).
+You own `<cache>/pipeline.json` for Medium and Large flows; Small flow does not touch it. The full contract, including how to degrade when state is unavailable, is in [`state-schema.md`](../state-schema.md).
 
 | Phase | Field writes |
 | --- | --- |
@@ -240,7 +240,7 @@ Do **not** absorb scope creep silently. The router is the load-bearing place whe
 
 Refine the raw request with the user before any technical shaping. Interactive — the requirements-generator persona collaborates with the user, not at them.
 
-1. Read [`./requirements-generator.md`](./requirements-generator.md) and adopt that persona. Escalate to [`../product-team/product-designer.md`](../product-team/product-designer.md) only when the user explicitly asks for research planning, journey mapping, visual critique, or design QA.
+1. Read [`requirements-generator`](../requirements-generator/SKILL.md) and adopt that persona. Escalate to the `product-designer` role skill only when the user explicitly asks for research planning, journey mapping, visual critique, or design QA.
 2. Produce a **Requirements Brief** with: task summary, surface area, requirements (functional / non-functional / accessibility-when-UI / constraints / out-of-scope / dependencies / edge cases), open questions, assumptions, confirmation-ready brief, suggested next step.
 3. Skip sections that don't apply — for backend / contract / infra changes, omit user-journey and visual considerations.
 4. Surface the brief and **wait for confirmation or edits** before proceeding.

@@ -239,7 +239,7 @@ Include:
 
 ## Cache integration
 
-Persist the shaped output into `<cache>/pipeline.json` so `execute-chunk` and `close-chunk` can use it. See [`state-schema.md`](./state-schema.md) for the contract, including how to proceed when state is unavailable.
+Persist the shaped output into `<cache>/pipeline.json` so `execute-chunk` and `close-chunk` can use it. See [`state-schema.md`](../state-schema.md) for the contract, including how to proceed when state is unavailable.
 
 On entry:
 

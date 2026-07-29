@@ -18,40 +18,40 @@ For complex work, invoke a squad. For specialist work, invoke a role. For ambigu
 
 | Role | Skill file | Use when |
 |---|---|---|
-| Product Manager | `.claude/skills/product-manager.md` | Defining value, scope, outcomes, prioritisation, PRDs, backlog structure |
-| Product Strategist | `.claude/skills/product-strategist.md` | Market positioning, vision, strategic bets, competitive framing |
-| Growth Product Marketing Manager | `.claude/skills/growth-product-marketing-manager.md` | Adoption, activation, messaging, funnel improvement, CRO, content strategy, SEO |
-| Pricing Strategist | `.claude/skills/pricing-strategist.md` | Pricing model design, tier structure, packaging, willingness-to-pay, monetisation trade-offs |
+| Product Manager | `.claude/skills/product-manager/SKILL.md` | Defining value, scope, outcomes, prioritisation, PRDs, backlog structure |
+| Product Strategist | `.claude/skills/product-strategist/SKILL.md` | Market positioning, vision, strategic bets, competitive framing |
+| Growth Product Marketing Manager | `.claude/skills/growth-product-marketing-manager/SKILL.md` | Adoption, activation, messaging, funnel improvement, CRO, content strategy, SEO |
+| Pricing Strategist | `.claude/skills/pricing-strategist/SKILL.md` | Pricing model design, tier structure, packaging, willingness-to-pay, monetisation trade-offs |
 
 ### Research, insight, and data
 
 | Role | Skill file | Use when |
 |---|---|---|
-| UX Researcher | `.claude/skills/ux-researcher.md` | Research planning, discovery, interviews, synthesis, validation |
-| Data Analyst | `.claude/skills/data-analyst.md` | Metrics, dashboards, funnels, experiments, behavioural evidence |
-| Customer Success | `.claude/skills/customer-success.md` | Customer feedback, retention signals, account pain points, adoption blockers |
-| STORM Researcher | `.claude/skills/storm-researcher.md` | Deep, strategic, controversial, or exploratory research; multi-perspective scans; contradiction analysis; blind-spot and adversarial reviews; incentive and historical-precedent analysis |
+| UX Researcher | `.claude/skills/ux-researcher/SKILL.md` | Research planning, discovery, interviews, synthesis, validation |
+| Data Analyst | `.claude/skills/data-analyst/SKILL.md` | Metrics, dashboards, funnels, experiments, behavioural evidence |
+| Customer Success | `.claude/skills/customer-success/SKILL.md` | Customer feedback, retention signals, account pain points, adoption blockers |
+| STORM Researcher | `.claude/skills/storm-researcher/SKILL.md` | Deep, strategic, controversial, or exploratory research; multi-perspective scans; contradiction analysis; blind-spot and adversarial reviews; incentive and historical-precedent analysis |
 
 ### Design and experience
 
 | Role | Skill file | Use when |
 |---|---|---|
-| Product Designer | `.claude/skills/product-designer.md` | UX, UI, flows, interaction design, design QA, accessibility-minded design |
-| Content Designer | `.claude/skills/content-designer.md` | UX writing, labels, errors, onboarding, comprehension, content clarity |
-| Design Systems Specialist | `.claude/skills/design-systems-specialist.md` | Components, tokens, theming, pattern governance, interface consistency, UI foundation selection (headless vs styled vs copy-in), component source intake |
-| Motion Designer | `.claude/skills/motion-designer.md` | UI animation, transitions, micro-interactions, expressive and brand-led motion on marketing or showcase surfaces, cursor/hover and pointer-driven effects, ambient and particle/WebGL backgrounds, motion tokens and systems, reduced-motion alternatives, animation performance (INP, CLS, jank), motion audits, intake review of third-party or generated animated components |
-| Accessibility Specialist | `.claude/skills/accessibility-specialist.md` | WCAG-minded review, inclusive design, assistive technology risks |
+| Product Designer | `.claude/skills/product-designer/SKILL.md` | UX, UI, flows, interaction design, design QA, accessibility-minded design |
+| Content Designer | `.claude/skills/content-designer/SKILL.md` | UX writing, labels, errors, onboarding, comprehension, content clarity |
+| Design Systems Specialist | `.claude/skills/design-systems-specialist/SKILL.md` | Components, tokens, theming, pattern governance, interface consistency, UI foundation selection (headless vs styled vs copy-in), component source intake |
+| Motion Designer | `.claude/skills/motion-designer/SKILL.md` | UI animation, transitions, micro-interactions, expressive and brand-led motion on marketing or showcase surfaces, cursor/hover and pointer-driven effects, ambient and particle/WebGL backgrounds, motion tokens and systems, reduced-motion alternatives, animation performance (INP, CLS, jank), motion audits, intake review of third-party or generated animated components |
+| Accessibility Specialist | `.claude/skills/accessibility-specialist/SKILL.md` | WCAG-minded review, inclusive design, assistive technology risks |
 
 ### Engineering, delivery, and quality
 
 | Role | Skill file | Use when |
 |---|---|---|
-| Software Engineer | `.claude/skills/software-engineer.md` | Implementation, code, feasibility, technical trade-offs, library selection and version-matched API use |
-| Technical Architect | `.claude/skills/technical-architect.md` | System design, integration strategy, scalability, platform decisions, standing-dependency evaluation |
-| DevOps Engineer | `.claude/skills/devops-engineer.md` | CI/CD, environments, deployment and rollback behaviour, observability, release reliability — risk in the **running system** |
-| Security Specialist | `.claude/skills/security-specialist.md` | Threat modelling, security audits, RLS / auth review, privacy and DPIA, supply-chain audit, AI/LLM safety, incident readiness, vulnerability triage |
-| QA Engineer | `.claude/skills/qa-engineer.md` | Test planning, regression, bug reporting, acceptance validation |
-| Delivery Manager | `.claude/skills/delivery-manager.md` | Delivery planning, dependency tracking, ceremonies — risk to **schedule, scope and flow of work**, not to the running system |
+| Software Engineer | `.claude/skills/software-engineer/SKILL.md` | Implementation, code, feasibility, technical trade-offs, library selection and version-matched API use |
+| Technical Architect | `.claude/skills/technical-architect/SKILL.md` | System design, integration strategy, scalability, platform decisions, standing-dependency evaluation |
+| DevOps Engineer | `.claude/skills/devops-engineer/SKILL.md` | CI/CD, environments, deployment and rollback behaviour, observability, release reliability — risk in the **running system** |
+| Security Specialist | `.claude/skills/security-specialist/SKILL.md` | Threat modelling, security audits, RLS / auth review, privacy and DPIA, supply-chain audit, AI/LLM safety, incident readiness, vulnerability triage |
+| QA Engineer | `.claude/skills/qa-engineer/SKILL.md` | Test planning, regression, bug reporting, acceptance validation |
+| Delivery Manager | `.claude/skills/delivery-manager/SKILL.md` | Delivery planning, dependency tracking, ceremonies — risk to **schedule, scope and flow of work**, not to the running system |
 
 ## Squad routing
 
@@ -131,14 +131,14 @@ The entry point is always `run-pipeline`. It classifies the request, surfaces a 
 
 | Skill | File | Purpose |
 |---|---|---|
-| run-pipeline | `.claude/skills/pipeline/run-pipeline.md` | Entry point — classify, confirm, dispatch |
-| requirements-generator | `.claude/skills/pipeline/requirements-generator.md` | Lightweight intake brief for coding tasks |
-| shape-task | `.claude/skills/pipeline/shape-task.md` | Decompose brief into requirements, strategy, and chunks |
-| execute-chunk | `.claude/skills/pipeline/execute-chunk.md` | Implement one approved chunk safely |
-| close-chunk | `.claude/skills/pipeline/close-chunk.md` | Verify closure against acceptance criteria |
-| cleanup-verify | `.claude/skills/pipeline/cleanup-verify.md` | Post-pipeline gate sweep and drift check |
-| diagnose | `.claude/skills/pipeline/diagnose.md` | Systematic root-cause analysis for bugs and unexpected behaviour |
-| design-critique | `.claude/skills/pipeline/design-critique.md` | Final-pass design review with SHIP / SHIP_WITH_NOTES / HOLD decision |
+| run-pipeline | `.claude/skills/pipeline/run-pipeline/SKILL.md` | Entry point — classify, confirm, dispatch |
+| requirements-generator | `.claude/skills/pipeline/requirements-generator/SKILL.md` | Lightweight intake brief for coding tasks |
+| shape-task | `.claude/skills/pipeline/shape-task/SKILL.md` | Decompose brief into requirements, strategy, and chunks |
+| execute-chunk | `.claude/skills/pipeline/execute-chunk/SKILL.md` | Implement one approved chunk safely |
+| close-chunk | `.claude/skills/pipeline/close-chunk/SKILL.md` | Verify closure against acceptance criteria |
+| cleanup-verify | `.claude/skills/pipeline/cleanup-verify/SKILL.md` | Post-pipeline gate sweep and drift check |
+| diagnose | `.claude/skills/pipeline/diagnose/SKILL.md` | Systematic root-cause analysis for bugs and unexpected behaviour |
+| design-critique | `.claude/skills/pipeline/design-critique/SKILL.md` | Final-pass design review with SHIP / SHIP_WITH_NOTES / HOLD decision |
 
 ### When to use run-pipeline
 

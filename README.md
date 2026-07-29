@@ -2,66 +2,69 @@
 
 A portable persona and prompt operating system for a coordinated product team. The role definitions are project-agnostic, so the same suite can drive any project without dragging project-specific context with it.
 
-The suite contains 19 role personas, an eight-skill delivery pipeline, and a routing brain. Each role is a self-contained markdown file: Agent-Skills-shaped frontmatter plus a persona body.
+The suite contains 19 role skills, an eight-skill delivery pipeline, and a routing brain. Each is a native Agent Skill — a directory with a `SKILL.md` — and the routing brain decides which one a request belongs to.
 
-### Packaging: what this is, and what it is not
+### Packaging: native skills *and* a routing brain
 
-These are **flat markdown files invoked through the routing brain**, not natively packaged Agent Skills.
+Each role and pipeline skill is a native [Agent Skill](https://code.claude.com/docs/en/skills) — one directory containing a `SKILL.md`:
 
-The [Agent Skills](https://code.claude.com/docs/en/skills) format requires one directory per skill containing a `SKILL.md`, and hosts discover skills by scanning for that layout. This repository ships `product-team/<role>.md` instead. The practical consequences:
+```
+product-team/product-manager/SKILL.md
+product-team/security-specialist/SKILL.md
+                              └── references/security-audit-cookbook.md
+pipeline/run-pipeline/SKILL.md
+```
 
-- **Roles are not auto-discovered or auto-triggered.** They are read on demand via the paths in `routing.md`, which you paste into your `CLAUDE.md`. That is the intended design — the routing brain decides which lens applies, rather than a description match.
-- **`disable-model-invocation: true` in the frontmatter is inert** under this install. It is a skill-discovery field, and nothing discovers these as skills. It is retained so the files are ready to package later.
-- **`metadata`, `license` and `compatibility` are documentation**, not part of the Agent Skills schema, which requires only `name` and `description`.
-- **`allowed-tools` in the pipeline files is a host allow-list.** Entries a host does not recognise are ignored.
+Installed, they land at `.claude/skills/<name>/SKILL.md`, which is the documented project-skill location. So they are discovered, and each is invocable directly as `/<name>` — `/product-manager`, `/motion-designer`, `/run-pipeline`.
 
-**This is a deliberate choice, not an unfinished migration.** Three reasons:
+**Every skill also keeps `disable-model-invocation: true`, deliberately.** That is what lets the two layers coexist rather than compete:
 
-- **The routing brain measurably works.** Role selection was tested at 89.6% mean accuracy across 16 cases, up from 70.8% before targeted fixes. Auto-discovery would bypass that logic and select on description-matching instead.
-- **The roles set `disable-model-invocation: true` on purpose.** They are meant to be dispatched deliberately, not triggered by keyword proximity — which is exactly the failure mode routing testing exposed ("payments integration" pulling Pricing Strategist).
-- **`install.sh` removes the friction packaging would have solved.** Path rewriting was the error-prone step, and it is now automated and tested.
+| | Effect |
+|---|---|
+| Skill packaging | Discovered, listed, invocable as `/<name>` |
+| `disable-model-invocation: true` | Claude will not auto-trigger on description keyword matching |
+| `routing.md` in `CLAUDE.md` | Arbitrates which role a request belongs to |
 
-If you do want auto-discovery, wrapping each role in its own directory with a `SKILL.md` is mechanical — the frontmatter already carries `name` and `description`. Weigh it against the fact that 29 skill descriptions would then be preloaded on every turn.
+Auto-triggering is the layer we deliberately suppress, because routing measurement showed description-proximity picks badly — "payments integration" pulled Pricing Strategist, "release risk" pulled Delivery Manager. The routing brain fixed those; keyword matching would reintroduce them. Remove the flag if you would rather have automatic invocation and accept that trade.
+
+Two shared pipeline documents — [`project-adapter.md`](./pipeline/project-adapter.md) and [`state-schema.md`](./pipeline/state-schema.md) — are reference material, not skills, so they sit alongside the skill directories rather than pretending to be one.
+
+### Frontmatter beyond the standard
+
+The standard requires only `name` and `description`. Everything else these files carry is this repo's own convention, and hosts ignore what they don't recognise:
+
+- **`metadata`** (`version`, `persona_type`, `tags`, `intents`, `output_types`) — documentation and versioning.
+- **`license`** and **`compatibility`** — provenance, not schema fields.
+- **`allowed-tools`** on the pipeline skills — a host allow-list.
+- **`context: fork`** on `run-pipeline` — a Claude Code extension that runs the skill in its own subagent context.
+
+All 27 skills are schema-valid: names match `[a-z0-9-]{1,64}`, no reserved words, and every description is well inside the 1,024-character limit.
 
 ## What's in here
 
 ```
 ProductTeam-skills/
-├── product-team/                     # The 18 role personas
-│   ├── product-manager.md
-│   ├── product-strategist.md
-│   ├── growth-product-marketing-manager.md
-│   ├── pricing-strategist.md
-│   ├── ux-researcher.md
-│   ├── data-analyst.md
-│   ├── customer-success.md
-│   ├── storm-researcher.md
-│   ├── product-designer.md
-│   ├── content-designer.md
-│   ├── design-systems-specialist.md
-│   ├── motion-designer.md
-│   ├── accessibility-specialist.md
-│   ├── software-engineer.md
-│   ├── technical-architect.md
-│   ├── devops-engineer.md
-│   ├── security-specialist.md
-│   ├── qa-engineer.md
-│   ├── delivery-manager.md
-│   └── references/                   # Detail loaded on demand, not by default
-│       ├── security-audit-cookbook.md
-│       ├── security-healthcare-pack.md
-│       └── motion-resources.md
-├── pipeline/                         # Delivery pipeline execution suite
-│   ├── run-pipeline.md               # Entry point — classify, confirm, dispatch
-│   ├── requirements-generator.md     # Lightweight coding-task intake
-│   ├── shape-task.md                 # Decompose brief into chunks
-│   ├── execute-chunk.md              # Implement one chunk safely
-│   ├── close-chunk.md                # Verify chunk closure
-│   ├── cleanup-verify.md             # Post-pipeline gate sweep
-│   ├── diagnose.md                   # Systematic root-cause analysis
-│   ├── design-critique.md            # Final-pass design review
-│   ├── project-adapter.md            # Per-project commands, gates, risky paths
-│   └── state-schema.md               # Shared pipeline state contract
+├── product-team/                     # 19 role skills, one directory each
+│   ├── product-manager/SKILL.md
+│   ├── product-designer/SKILL.md
+│   ├── motion-designer/
+│   │   ├── SKILL.md
+│   │   └── references/motion-resources.md
+│   ├── security-specialist/
+│   │   ├── SKILL.md
+│   │   └── references/            # audit cookbook, healthcare pack
+│   └── ...                        # 14 more
+├── pipeline/                         # 8 pipeline skills + 2 shared docs
+│   ├── run-pipeline/SKILL.md         # Entry point — classify, confirm, dispatch
+│   ├── shape-task/SKILL.md
+│   ├── execute-chunk/SKILL.md
+│   ├── close-chunk/SKILL.md
+│   ├── cleanup-verify/SKILL.md
+│   ├── diagnose/SKILL.md
+│   ├── design-critique/SKILL.md
+│   ├── requirements-generator/SKILL.md
+│   ├── project-adapter.md            # shared doc, not a skill
+│   └── state-schema.md               # shared doc, not a skill
 ├── evals/                            # Does any of this actually help?
 │   ├── README.md                     # Design, and how to read the results
 │   ├── run.py                        # Runner — role vs no-role baseline
@@ -73,7 +76,7 @@ ProductTeam-skills/
 
 ## Delivery pipeline
 
-Six skills that work as an integrated execution framework. The entry point is `run-pipeline` — it classifies work by size and routes it through the right phase composition, sharing state via `.claude/cache/pipeline.json`.
+Eight skills that work as an integrated execution framework. The entry point is `run-pipeline` — it classifies work by size and routes it through the right phase composition, sharing state as described in [state-schema.md](./pipeline/state-schema.md).
 
 | Skill | Use when |
 |---|---|
@@ -213,14 +216,13 @@ Updating to a new release of this suite: `cd .claude/skills-vendor && git fetch 
 
 ```bash
 git clone https://github.com/afaconti-glitch/ProductTeam-skills.git /tmp/ProductTeam-skills
-mkdir -p .claude/skills/pipeline .claude/skills/references
-cp /tmp/ProductTeam-skills/product-team/*.md .claude/skills/
-cp /tmp/ProductTeam-skills/product-team/references/*.md .claude/skills/references/
-cp /tmp/ProductTeam-skills/pipeline/*.md .claude/skills/pipeline/
+mkdir -p .claude/skills/pipeline
+cp -R /tmp/ProductTeam-skills/product-team/* .claude/skills/
+cp -R /tmp/ProductTeam-skills/pipeline/*     .claude/skills/pipeline/
 echo '.claude/' >> .gitignore
 ```
 
-Copy `references/` too — roles link to it by relative path, and the links break without it.
+No trailing slash on those globs — `cp -R src/*/ dest/` copies directory *contents* and collapses every role onto one `SKILL.md`.
 
 Updates require re-copying. Use this when the project will diverge from the canonical suite.
 

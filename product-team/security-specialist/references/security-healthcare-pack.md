@@ -1,6 +1,6 @@
 # Healthcare security domain pack
 
-Reference for [`security-specialist`](../security-specialist.md). Read this **only when the product handles medical or health data** (PHI/PHR). It is domain-specific and does not apply to most projects.
+Reference for [`security-specialist`](../SKILL.md). Read this **only when the product handles medical or health data** (PHI/PHR). It is domain-specific and does not apply to most projects.
 
 Where it applies, cross-tenant isolation is the load-bearing invariant. Everything else is hardening.
 

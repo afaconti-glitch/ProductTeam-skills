@@ -249,7 +249,7 @@ For Medium or Large chunks, use the full structure above.
 
 ## Cache integration
 
-Coordinate with `<cache>/pipeline.json` (contract in [`state-schema.md`](./state-schema.md)).
+Coordinate with `<cache>/pipeline.json` (contract in [`state-schema.md`](../state-schema.md)).
 
 On entry:
 
