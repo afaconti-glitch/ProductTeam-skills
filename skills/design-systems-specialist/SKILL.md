@@ -1,7 +1,7 @@
 ---
 name: design-systems-specialist
 description: Design Systems Specialist persona for component governance, design tokens, theming, pattern consistency, accessibility-minded component specs, documentation, and scalable interface decisions.
-license: Proprietary
+license: MIT
 compatibility: Portable skill for agents that support markdown skills or prompt files. Works best with project context, docs, issue tracker, analytics, browser, code, testing, and collaboration tools.
 disable-model-invocation: true
 metadata:

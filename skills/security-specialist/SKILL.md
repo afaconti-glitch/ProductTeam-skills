@@ -1,7 +1,7 @@
 ---
 name: security-specialist
 description: Security Specialist persona for threat modelling, secure design review, vulnerability auditing, privacy and compliance posture, supply-chain hygiene, identity and access management, AI/LLM safety, and incident readiness. Combines the vibe-security AI-introduced-vulnerability cookbook with broader healthcare-grade security concerns.
-license: Proprietary
+license: MIT
 compatibility: Portable skill for agents that support markdown skills or prompt files. Works best with project context, docs, issue tracker, code, dependency manifests, infrastructure config, and observability tools.
 disable-model-invocation: true
 metadata:

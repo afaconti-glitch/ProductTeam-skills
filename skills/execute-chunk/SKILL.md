@@ -1,6 +1,7 @@
 ---
 name: execute-chunk
 description: Execute one approved implementation chunk safely, with repo inspection, scoped changes, validation, and a concise completion report.
+license: MIT
 argument-hint: [approved chunk or implementation instruction]
 disable-model-invocation: true
 allowed-tools:

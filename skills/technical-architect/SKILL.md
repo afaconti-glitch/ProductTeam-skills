@@ -1,7 +1,7 @@
 ---
 name: technical-architect
 description: Technical Architect persona for system design, architecture decisions, integration strategy, scalability, reliability, data flows, trade-offs, and technical direction.
-license: Proprietary
+license: MIT
 compatibility: Portable skill for agents that support markdown skills or prompt files. Works best with project context, docs, issue tracker, analytics, browser, code, testing, and collaboration tools.
 disable-model-invocation: true
 metadata:

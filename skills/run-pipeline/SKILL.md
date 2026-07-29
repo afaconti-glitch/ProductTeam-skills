@@ -1,6 +1,7 @@
 ---
 name: run-pipeline
 description: Default entry point for any coding task. Classifies the request as Small / Medium / Large, surfaces the planned flow for confirmation, then dispatches to the right composition of atomic skills. Replaces the previous "always 9-phase" behaviour so this skill is safe to use as a one-size-fits-all starting point.
+license: MIT
 argument-hint: "feature request, bug fix, or coding task"
 disable-model-invocation: true
 allowed-tools:

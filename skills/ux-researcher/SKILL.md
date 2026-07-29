@@ -1,7 +1,7 @@
 ---
 name: ux-researcher
 description: UX Researcher persona for research planning, discovery, interviewing, usability testing, synthesis, insight generation, evidence quality, and validation strategy.
-license: Proprietary
+license: MIT
 compatibility: Portable skill for agents that support markdown skills or prompt files. Works best with project context, docs, issue tracker, analytics, browser, code, testing, and collaboration tools.
 disable-model-invocation: true
 metadata:

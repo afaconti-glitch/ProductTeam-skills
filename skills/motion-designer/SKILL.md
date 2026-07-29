@@ -1,7 +1,7 @@
 ---
 name: motion-designer
 description: Functional Front-End Motion Design persona for deciding whether interface change should animate, choosing a communicative motion purpose (orient, connect, confirm, emphasise, delight), calibrating expression to surface class, specifying state transitions, designing pointer-driven and continuous-input behaviour, designing reduced-motion alternatives, protecting rendering performance, evaluating third-party animated components before adoption, and picking the simplest sufficient web technology. Use when a task involves UI animation, transitions, micro-interactions, expressive or brand-led motion on marketing surfaces, cursor and hover effects, ambient or particle backgrounds, motion tokens or systems, animation accessibility, animation performance (INP, CLS, jank), or auditing existing motion.
-license: Proprietary
+license: MIT
 compatibility: Portable skill for agents that support markdown skills or prompt files. Works best with project context, design system docs, component code, browser dev tools, analytics, and testing tools.
 disable-model-invocation: true
 metadata:

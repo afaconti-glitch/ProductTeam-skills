@@ -1,6 +1,7 @@
 ---
 name: design-critique
 description: Final-pass design review against intent. Evaluates implemented UI or design against its brief, produces severity-ordered findings, and issues a SHIP / SHIP_WITH_NOTES / HOLD decision. Use before release or after any significant UI change.
+license: MIT
 argument-hint: "[design brief, screen description, Figma link, or implemented feature to review]"
 disable-model-invocation: true
 allowed-tools:

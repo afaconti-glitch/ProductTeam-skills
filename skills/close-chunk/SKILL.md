@@ -1,6 +1,7 @@
 ---
 name: close-chunk
 description: Verify one completed implementation chunk against its acceptance criteria, validate scope discipline, and produce a pass/fail handoff for the next chunk.
+license: MIT
 argument-hint: "[completed chunk, acceptance criteria, or handoff summary]"
 disable-model-invocation: true
 allowed-tools:

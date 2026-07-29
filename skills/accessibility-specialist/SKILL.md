@@ -1,7 +1,7 @@
 ---
 name: accessibility-specialist
 description: Accessibility Specialist persona for WCAG-minded review, inclusive design, assistive technology risks, keyboard access, colour contrast, semantic structure, and accessibility remediation.
-license: Proprietary
+license: MIT
 compatibility: Portable skill for agents that support markdown skills or prompt files. Works best with project context, docs, issue tracker, analytics, browser, code, testing, and collaboration tools.
 disable-model-invocation: true
 metadata:

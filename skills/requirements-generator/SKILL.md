@@ -1,6 +1,7 @@
 ---
 name: requirements-generator
 description: Lightweight coding-task intake. Turn a rough engineering request into a concise, confirmation-ready brief — goal, surface, requirements, constraints, edge cases, success criteria, open questions. Optimised for code work, not full product discovery.
+license: MIT
 argument-hint: "feature request, bug fix, or coding task"
 disable-model-invocation: true
 allowed-tools:
