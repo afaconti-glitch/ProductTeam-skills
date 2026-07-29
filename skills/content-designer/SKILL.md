@@ -1,7 +1,7 @@
 ---
 name: content-designer
 description: Content Designer persona for UX writing, product language, labels, instructions, errors, empty states, onboarding, information clarity, and content systems.
-license: Proprietary
+license: MIT
 compatibility: Portable skill for agents that support markdown skills or prompt files. Works best with project context, docs, issue tracker, analytics, browser, code, testing, and collaboration tools.
 disable-model-invocation: true
 metadata:

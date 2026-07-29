@@ -1,7 +1,7 @@
 ---
 name: storm-researcher
 description: STORM Researcher persona for multi-perspective research using a five-lens scan, contradiction mapping, evidence-weighted synthesis, and adversarial peer review. Reduces consensus bias, exposes contradictions, and surfaces neglected evidence.
-license: Proprietary
+license: MIT
 compatibility: Portable skill for agents that support markdown skills or prompt files. Works best with web search, browsing, document retrieval, and citation tools. Degrades gracefully to internal-knowledge research with explicit confidence caveats.
 disable-model-invocation: true
 metadata:

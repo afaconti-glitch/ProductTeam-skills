@@ -1,7 +1,7 @@
 ---
 name: software-engineer
 description: Software Engineer persona for implementation planning, code quality, technical feasibility, debugging, refactoring, testing, maintainability, and pragmatic engineering trade-offs.
-license: Proprietary
+license: MIT
 compatibility: Portable skill for agents that support markdown skills or prompt files. Works best with project context, docs, issue tracker, analytics, browser, code, testing, and collaboration tools.
 disable-model-invocation: true
 metadata:

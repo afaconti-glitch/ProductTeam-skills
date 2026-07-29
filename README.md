@@ -211,22 +211,6 @@ Nothing assumes a JavaScript toolchain, a specific agent host, or a writable cac
 
 Specifically observed: a "one-line" schema change correctly promoted Small → Medium; `execute-chunk` skipping the build and drift gates because the chunk did not touch a declared risk path; `close-chunk` re-running the gate chain itself rather than trusting the implementer's report; `cleanup-verify` regenerating a stale artefact, refusing to commit it, withholding the gate stamp and returning `BLOCKED`.
 
-## Does any of it help?
-
-`evals/` measures it, with a **mandatory no-role baseline** — a skill that passes its own fixtures proves nothing if the model passes them unaided.
-
-| | baseline | with skill |
-|---|---:|---:|
-| Routing accuracy | 70.8% | **89.6%** |
-| `product-manager`, Sonnet | 92% | 100% |
-| `product-manager`, Haiku | 59% | **98%** |
-| `software-engineer`, Sonnet | 69% | 100% |
-| Blind A/B, `product-designer` | — | role 2, no-role 0, tie 2 |
-
-**A skill's value scales inversely with model capability.** On Sonnet the Product Manager persona adds 8 points; on Haiku, 39. Which is why nothing has been trimmed on strong-model evidence — that would optimise for the best model available and quietly degrade everything below it.
-
-Honest coverage: 2 of 19 roles have clean fixture measurements (a third was blind-A/B judged), 4 of 8 pipeline skills have been executed, no squads tested. `evals/README.md` records that, plus all eight harness defects found while building it and what each one falsely reported.
-
 ## Repository layout
 
 ```
@@ -247,7 +231,6 @@ ProductTeam-skills/
 ├── reference/                        # shared docs, deliberately not skills
 │   ├── project-adapter.md
 │   └── state-schema.md
-├── evals/                            # baselines, fixtures, blind A/B
 ├── routing.md                        # the routing brain
 ├── install.sh
 └── README.md
@@ -274,12 +257,13 @@ Consuming projects should pin to a tag and update deliberately.
 
 ## Licence
 
-Proprietary. Internal use only. See [LICENSE](./LICENSE).
+[MIT](./LICENSE). Use it, fork it, adapt it. Attribution appreciated but the licence only requires the copyright notice.
 
-## Contributing (internal)
+## Contributing
+
+Issues and pull requests welcome.
 
 - Follow the existing skill structure when adding one.
 - Update [routing.md](./routing.md): a row in the relevant table, squad memberships if cross-functional, and an entry in the specialist-routing examples. **The table matters more than the prose** — see the routing findings above.
 - Bump the skill's frontmatter `version` on behaviour-shaping changes.
-- Add or update fixtures under `evals/` and run them with a baseline. A skill that does not beat no-skill is documentation, which is a legitimate thing to be — but it should be a decision, not an accident.
 - Tag a release after merge to `main`.

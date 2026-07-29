@@ -1,6 +1,7 @@
 ---
 name: diagnose
 description: Systematic root-cause analysis for bugs, unexpected behaviour, and broken states. Follows a structured reproduce → isolate → hypothesise → verify → fix loop. Use when a problem is unclear, intermittent, or has resisted quick fixes.
+license: MIT
 argument-hint: "[bug description, error message, or unexpected behaviour]"
 disable-model-invocation: true
 allowed-tools:

@@ -1,6 +1,7 @@
 ---
 name: shape-task
 description: Turn a rough feature request or task requirement into a clarified, confirmed, implementation-ready plan and execution chunks.
+license: MIT
 argument-hint: [feature request or task]
 disable-model-invocation: true
 ---

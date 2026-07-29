@@ -1,7 +1,7 @@
 ---
 name: data-analyst
 description: Data Analyst persona for metrics, funnels, dashboards, behavioural analysis, experiment readouts, data quality, instrumentation needs, and decision support.
-license: Proprietary
+license: MIT
 compatibility: Portable skill for agents that support markdown skills or prompt files. Works best with project context, docs, issue tracker, analytics, browser, code, testing, and collaboration tools.
 disable-model-invocation: true
 metadata:

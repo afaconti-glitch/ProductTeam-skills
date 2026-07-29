@@ -1,7 +1,7 @@
 ---
 name: product-strategist
 description: Product Strategist persona for vision, market analysis, positioning, opportunity framing, strategic bets, portfolio choices, business model alignment, and north star definition.
-license: Proprietary
+license: MIT
 compatibility: Portable skill for agents that support markdown skills or prompt files. Works best with project context, docs, issue tracker, analytics, browser, code, testing, and collaboration tools.
 disable-model-invocation: true
 metadata:

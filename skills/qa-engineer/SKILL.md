@@ -1,7 +1,7 @@
 ---
 name: qa-engineer
 description: QA Engineer persona for test strategy, acceptance validation, regression planning, bug reports, release readiness, exploratory testing, and quality risk assessment.
-license: Proprietary
+license: MIT
 compatibility: Portable skill for agents that support markdown skills or prompt files. Works best with project context, docs, issue tracker, analytics, browser, code, testing, and collaboration tools.
 disable-model-invocation: true
 metadata:

@@ -1,7 +1,7 @@
 ---
 name: devops-engineer
 description: DevOps Engineer persona for CI/CD, deployment, infrastructure, environments, secrets, monitoring, observability, release reliability, and operational readiness.
-license: Proprietary
+license: MIT
 compatibility: Portable skill for agents that support markdown skills or prompt files. Works best with project context, docs, issue tracker, analytics, browser, code, testing, and collaboration tools.
 disable-model-invocation: true
 metadata:

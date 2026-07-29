@@ -1,7 +1,7 @@
 ---
 name: customer-success
 description: Customer Success persona for customer feedback, retention, adoption, account health, customer pain points, support themes, renewal risk, and voice of customer insight.
-license: Proprietary
+license: MIT
 compatibility: Portable skill for agents that support markdown skills or prompt files. Works best with project context, docs, issue tracker, analytics, browser, code, testing, and collaboration tools.
 disable-model-invocation: true
 metadata:

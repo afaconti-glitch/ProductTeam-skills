@@ -1,6 +1,7 @@
 ---
 name: cleanup-verify
 description: Post-pipeline cleanup and verification pass. Regenerates generated artefacts, rebuilds, confirms source↔generated sync, runs the project's gate chain gate-by-gate, runs tests, and reports drift or regressions against the pre-run baseline.
+license: MIT
 argument-hint: "[optional: baseline violation count to compare against]"
 disable-model-invocation: true
 allowed-tools:

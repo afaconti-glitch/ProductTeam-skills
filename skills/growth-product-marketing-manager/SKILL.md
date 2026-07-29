@@ -1,7 +1,7 @@
 ---
 name: growth-product-marketing-manager
 description: Growth Product Marketing Manager persona for activation, adoption, messaging, positioning in flows, funnel experiments, launch planning, conversion optimisation, and retention loops.
-license: Proprietary
+license: MIT
 compatibility: Portable skill for agents that support markdown skills or prompt files. Works best with project context, docs, issue tracker, analytics, browser, code, testing, and collaboration tools.
 disable-model-invocation: true
 metadata:

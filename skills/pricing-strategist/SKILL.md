@@ -1,7 +1,7 @@
 ---
 name: pricing-strategist
 description: Pricing and monetisation persona for pricing model design, tier structure, packaging, willingness-to-pay research, competitive pricing, feature gating, and monetisation trade-offs. Use when decisions involve how to charge, what to include in each tier, how to position pricing competitively, or how to experiment with price points.
-license: Proprietary
+license: MIT
 compatibility: Portable skill for agents that support markdown skills or prompt files. Works best with project context, docs, analytics, sales data, customer research, and competitive intelligence tools.
 disable-model-invocation: true
 metadata:
