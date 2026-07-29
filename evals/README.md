@@ -96,6 +96,74 @@ A role whose cases are overwhelmingly `role ✓ / base ✓` is documentation, no
 
 **Do not optimise for a high pass rate.** It is trivially achieved by writing easy fixtures. The number that matters is how many cases move from ✗ to ✓ when the role is loaded.
 
+## What has actually been measured
+
+All figures below come from the corrected harness — neutral baseline, tools denied, ungraded runs excluded. Earlier numbers taken before those fixes are superseded.
+
+### Routing
+
+Mean accuracy across 16 cases, `--repeat 3`, four iterations of `routing.md`:
+
+| | mean rate |
+|---|---:|
+| baseline | 70.8% |
+| + disambiguation rules 6 & 7 | 85.4% |
+| + harness escape hatch | 87.5% |
+| + two roles-table rows sharpened | **89.6%** |
+
+Two findings drove it:
+
+- **Keyword collision, not persona overlap.** "Payments integration" routed to Pricing Strategist; "release risk" to Delivery Manager. Where roles genuinely overlap, routing coped fine. The external review that prompted this work diagnosed overlap and prescribed fewer roles; the data says the fix is disambiguation.
+- **The roles table outweighs the prose rules beneath it.** One case failed 0/3 across three prose edits, then passed at 67% when two words changed in the table. Put load-bearing distinctions in the table.
+
+### product-manager, hard fixture set
+
+Assertions derived from the role's own quality rubric and Known limits, not from the fixture author's preference. `--repeat 3`.
+
+| | baseline | with role | delta |
+|---|---:|---:|---:|
+| Sonnet | 92% | 100% | +8 |
+| Haiku | 59% | 98% | **+39** |
+
+Per case, the gap opens where the model is weakest:
+
+| case | Sonnet base | Haiku base |
+|---|---:|---:|
+| solution-first-request | 100% | 25% |
+| gamed-metric | 92% | 25% |
+| outside-competence | 67% | 67% |
+
+**A role's value scales inversely with model capability.** On Sonnet the persona adds 8 points; on Haiku, 39. Trimming role content on strong-model evidence would optimise for the best model available and quietly degrade everything below it. Every eval should therefore run on at least two models — a single-model result led directly to a wrong recommendation during this work.
+
+### Blind A/B, product-designer
+
+Four real design tasks, outputs shuffled, judged by a human who did not know which arm was which:
+
+- role preferred **2**, no-role preferred **0**, tie **2**
+
+The role never lost. Wins were on `empty-state` and `destructive-confirm` — craft-specific edge-case work. Ties were on `bulk-actions` and `onboarding-cut` — general product reasoning a strong model does well anyway. Same shape as the fixture data, arrived at by a completely different method.
+
+## The instrument was the main source of error
+
+Eight defects surfaced in the harness during its first day, and **every one produced a confident, plausible, wrong result**. Recorded because the pattern is the lesson:
+
+| Defect | What it produced |
+|---|---|
+| Invented `--permission-mode denyAll` | 4 routing "failures" that were a rejected CLI flag |
+| Auth error scored as `0.0` | A working role reported as scoring zero |
+| Infra-sign matching over full stdout | Aborted a valid run because a PM answer mentioned "rate limit" |
+| `expect_any` omitted a correct answer | 3 correct routings scored as failures |
+| Routing prompt offered no `none` option | A rule that says "no specialist needed" could never fire |
+| Fixture referenced code it never included | An unsatisfiable assertion read as a role failure |
+| Grader failure scored as `0.0` | A `ROLE MADE IT WORSE` verdict from an arm that scored 1.0 twice |
+| Baseline passed no system prompt | Compared the role against the host's *agent* prompt, not a neutral one — silently corrupted every baseline figure |
+
+The last two are the instructive ones. Both produced numbers that looked reasonable and were reported as findings before being caught. The first six announced themselves.
+
+Two habits caught all eight, and neither is optional: **run a baseline**, and **store every raw transcript**. A summary table cannot tell you it is lying; a transcript can.
+
+One more caution in the other direction. Routing rule 7 ("trivial work needs no specialist") scored 0–33% in this harness but works correctly in a real installed project. The harness prompt demanding a bare filename was suppressing it. Fixture framing can hide a working rule as easily as it can invent a broken one.
+
 ## Adding cases
 
 Start from the `Regression prompts` section already at the bottom of every role file — those are test-case seeds that were never executed. Converting one means adding the assertions that make it checkable.

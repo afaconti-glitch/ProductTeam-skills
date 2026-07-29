@@ -15,7 +15,13 @@ The [Agent Skills](https://code.claude.com/docs/en/skills) format requires one d
 - **`metadata`, `license` and `compatibility` are documentation**, not part of the Agent Skills schema, which requires only `name` and `description`.
 - **`allowed-tools` in the pipeline files is a host allow-list.** Entries a host does not recognise are ignored.
 
-Native packaging is a plausible future direction, not a claim about today. If you need auto-discovery, wrap each role in its own directory with a `SKILL.md` — the frontmatter is already close enough to make that mechanical.
+**This is a deliberate choice, not an unfinished migration.** Three reasons:
+
+- **The routing brain measurably works.** Role selection was tested at 89.6% mean accuracy across 16 cases, up from 70.8% before targeted fixes. Auto-discovery would bypass that logic and select on description-matching instead.
+- **The roles set `disable-model-invocation: true` on purpose.** They are meant to be dispatched deliberately, not triggered by keyword proximity — which is exactly the failure mode routing testing exposed ("payments integration" pulling Pricing Strategist).
+- **`install.sh` removes the friction packaging would have solved.** Path rewriting was the error-prone step, and it is now automated and tested.
+
+If you do want auto-discovery, wrapping each role in its own directory with a `SKILL.md` is mechanical — the frontmatter already carries `name` and `description`. Weigh it against the fact that 29 skill descriptions would then be preloaded on every turn.
 
 ## What's in here
 
