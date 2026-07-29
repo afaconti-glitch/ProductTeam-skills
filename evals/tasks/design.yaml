@@ -1,0 +1,36 @@
+role_hint: product-designer
+description: >
+  Starter tasks for blind A/B comparison. Replace these with work you actually
+  need done — the point of this harness is to judge real artefacts, and a task
+  you genuinely care about produces a sharper judgement than a plausible-sounding
+  one. Keep the prompt as you would really write it, including the parts that
+  are underspecified. Cleaning up the prompt removes exactly the ambiguity the
+  role is supposed to handle.
+
+tasks:
+  - id: empty-state
+    prompt: >
+      Our reports section shows a blank page when a new user has no data yet.
+      Design the empty state.
+
+  - id: bulk-actions
+    prompt: >
+      Users need to archive, tag and export multiple records at once from the
+      list view. There are about 40 rows per page and some users have thousands
+      of records. Design the interaction.
+
+  - id: destructive-confirm
+    prompt: >
+      Deleting a workspace removes every project and file inside it and can't be
+      undone. Right now it's a single button with a browser confirm dialog.
+      Redesign it.
+
+  - id: onboarding-cut
+    prompt: >
+      Our onboarding is seven steps and 60% of people drop out by step four.
+      Leadership wants it reduced to three steps. What should the three be, and
+      what happens to the rest?
+
+  - id: mobile-table
+    prompt: >
+      We have a data table with nine columns that's unusable on mobile. Fix it.

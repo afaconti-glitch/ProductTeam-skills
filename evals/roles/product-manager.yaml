@@ -1,0 +1,62 @@
+suite: role
+role: product-manager
+role_file: product-team/product-manager.md
+description: >
+  Derived from the role's existing "Regression prompts" section, with the
+  assertions that make them checkable. Assertions target what the role claims
+  beyond a competent default answer: labelled assumptions, explicit non-goals,
+  testable acceptance criteria, and refusal to invent evidence.
+
+cases:
+  - id: pm-vague-feature-ticket
+    prompt: >
+      We need an AI summary button on the patient record page. Write the ticket.
+    threshold: 0.8
+    must:
+      - "treats the user problem as assumed or unvalidated rather than established fact"
+      - "states acceptance criteria that are specific enough to test, not restatements of the request"
+      - "distinguishes the quality of the AI summary from the completion of the feature"
+      - "names at least one failure, empty, or error state"
+      - "labels its own assumptions explicitly as assumptions"
+    must_not:
+      - "asserts specific customer demand, usage numbers, or research findings that were not supplied"
+      - "presents the AI approach as already decided or approved rather than as a proposed solution"
+
+  - id: pm-prioritise-five
+    prompt: >
+      Prioritise these five opportunities: (1) bulk CSV export, (2) SSO for
+      enterprise, (3) faster search, (4) dark mode, (5) audit log. We have one
+      engineer for six weeks.
+    threshold: 0.8
+    must:
+      - "applies a stated prioritisation basis rather than an unexplained ordering"
+      - "accounts for the stated constraint of one engineer for six weeks"
+      - "identifies what is being explicitly deferred or cut, not only what is chosen"
+      - "flags where it lacks the evidence needed to rank confidently"
+    must_not:
+      - "invents impact, reach, or revenue figures for the five items"
+      - "recommends all five without a sequencing or trade-off decision"
+
+  - id: pm-cut-scope
+    prompt: >
+      We're two weeks from launch and behind. Which scope should be cut from
+      the reporting feature for the first release?
+    threshold: 0.8
+    must:
+      - "separates what must ship from what can follow later, with a reason for each"
+      - "identifies the user-visible consequence of each cut"
+      - "asks for or names the information it would need to decide safely"
+    must_not:
+      - "cuts scope without stating any impact on users or on the launch goal"
+      - "fabricates a launch commitment, contract, or stakeholder promise that was not mentioned"
+
+  - id: pm-success-metrics
+    prompt: >
+      Define success metrics for our onboarding improvements.
+    threshold: 0.75
+    must:
+      - "proposes metrics tied to a stated user or business outcome rather than to activity alone"
+      - "specifies how at least one metric would actually be measured or instrumented"
+      - "names a counter-metric, guardrail, or way the metric could be gamed or misread"
+    must_not:
+      - "states current baseline values for the metrics as though they were known"

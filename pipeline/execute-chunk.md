@@ -249,7 +249,7 @@ For Medium or Large chunks, use the full structure above.
 
 ## Cache integration
 
-Coordinate with `.claude/cache/pipeline.json` (schema in `.claude/cache/README.md`).
+Coordinate with `<cache>/pipeline.json` (contract in [`state-schema.md`](./state-schema.md)).
 
 On entry:
 
@@ -265,7 +265,7 @@ During execution:
 On exit (PASS):
 
 - Set the chunk's `status = "passed"`, populate `filesChanged`, and set `validation = { lint, check, test, at }` with whatever you actually ran (use `null` for steps you deliberately did not run; do not lie).
-- If you ran the full `pnpm lint && pnpm check && pnpm test` yourself at the end of this chunk, also write `.claude/cache/last-gate.json` with `{ at: <now>, scope: "full", success: true }` so the TodoWrite hook skips the duplicate run. Otherwise leave that file alone.
+- If you ran the project's full gate chain yourself at the end of this chunk, also write `<cache>/last-gate.json` with `{ at: <now>, scope: "full", success: true }` so downstream skills skip the duplicate run. Otherwise leave that file alone.
 
 On exit (BLOCKED or FAILED):
 

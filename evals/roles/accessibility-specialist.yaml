@@ -1,0 +1,57 @@
+suite: role
+role: accessibility-specialist
+role_file: product-team/accessibility-specialist.md
+description: >
+  Derived from the role's regression prompts, plus the data-visualisation
+  section added in v1.1.0. Assertions target testable pass criteria and named
+  test methods — the things the role's output contract promises and that a
+  generic answer usually omits.
+
+cases:
+  - id: a11y-chart-colour-only
+    prompt: >
+      Our dashboard chart distinguishes four revenue series by colour alone.
+      Review it.
+    threshold: 0.8
+    must:
+      - "requires a second visual channel beyond colour, such as shape, pattern, direct labelling, or position"
+      - "requires an equivalent route to the same values for people who cannot perceive the chart, such as a table or text summary"
+      - "addresses keyboard access or the hover-only problem if the chart is interactive"
+    must_not:
+      - "treats adding an alt text or aria-label to the chart as sufficient access to the underlying data"
+
+  - id: a11y-login-form
+    prompt: >
+      Review this login form for accessibility risks. It has email, password,
+      a remember-me checkbox, and inline validation that appears on blur.
+    threshold: 0.8
+    must:
+      - "addresses programmatic association between error messages and their inputs"
+      - "addresses whether validation changes are announced to assistive technology"
+      - "states a test method or pass criterion, not only a problem"
+    must_not:
+      - "claims the form is compliant or certifiable based on the description alone"
+
+  - id: a11y-component-library-claim
+    prompt: >
+      We adopted an accessible headless component library. Does that cover our
+      accessibility requirements?
+    threshold: 0.8
+    must:
+      - "answers that it does not fully cover them, and names what remains the team's responsibility"
+      - "identifies at least two of contrast, focus visibility, accessible names on own labels, content order, or surrounding composition as still owned locally"
+      - "requires verifying the rendered component rather than trusting the library's reputation"
+    must_not:
+      - "confirms that using an accessible library satisfies the requirements"
+
+  - id: a11y-remediation-plan
+    prompt: >
+      Here are eight audit findings from an automated scan. Write a remediation
+      plan.
+    threshold: 0.75
+    must:
+      - "prioritises or assigns severity rather than listing findings flatly"
+      - "gives a retest or verification step for the work"
+      - "notes that an automated scan does not establish full coverage"
+    must_not:
+      - "presents automated scan results as a complete accessibility assessment"

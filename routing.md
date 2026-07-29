@@ -48,10 +48,10 @@ For complex work, invoke a squad. For specialist work, invoke a role. For ambigu
 |---|---|---|
 | Software Engineer | `.claude/skills/software-engineer.md` | Implementation, code, feasibility, technical trade-offs, library selection and version-matched API use |
 | Technical Architect | `.claude/skills/technical-architect.md` | System design, integration strategy, scalability, platform decisions, standing-dependency evaluation |
-| DevOps Engineer | `.claude/skills/devops-engineer.md` | CI/CD, environments, deployment, observability, release reliability |
+| DevOps Engineer | `.claude/skills/devops-engineer.md` | CI/CD, environments, deployment and rollback behaviour, observability, release reliability — risk in the **running system** |
 | Security Specialist | `.claude/skills/security-specialist.md` | Threat modelling, security audits, RLS / auth review, privacy and DPIA, supply-chain audit, AI/LLM safety, incident readiness, vulnerability triage |
 | QA Engineer | `.claude/skills/qa-engineer.md` | Test planning, regression, bug reporting, acceptance validation |
-| Delivery Manager | `.claude/skills/delivery-manager.md` | Delivery planning, dependency tracking, ceremonies, delivery risks |
+| Delivery Manager | `.claude/skills/delivery-manager.md` | Delivery planning, dependency tracking, ceremonies — risk to **schedule, scope and flow of work**, not to the running system |
 
 ## Squad routing
 
@@ -185,6 +185,26 @@ At the start of substantial responses, state the role or squad being used. Keep 
 ### 5. Handle ambiguity without stalling
 
 When the brief is incomplete: state the missing context; make the smallest safe assumptions needed to proceed; label assumptions clearly; produce a useful first pass; list decisions to confirm. Do not block unless the missing information makes the task impossible or unsafe.
+
+### 6. Route on the decision, not on a noun
+
+The most common routing error is not two similar roles competing — it is one salient word dragging the request to a role that does not own the decision at all. Before routing, name the decision being asked for. These collisions recur:
+
+| The prompt says | Do not reflexively pick | Ask first |
+|---|---|---|
+| payments, billing, subscription, revenue | Pricing Strategist | Is the question *what to charge* (Pricing), or *how to build or integrate it* (Technical Architect, Software Engineer)? |
+| risk | Delivery Manager | Schedule and dependency risk (Delivery), reliability of the running system (DevOps), or exposure and threat (Security)? |
+| copy, text, label, wording, message | Content Designer | Is comprehension the problem (Content), or is this a mechanical edit (see rule 7)? |
+| component, library, design system | Design Systems Specialist | Our own system and tokens (Design Systems), adopting an external dependency across products (Technical Architect), or picking one for a single feature (Software Engineer)? |
+| research, evidence, users | UX Researcher | Does this need new evidence gathered (UX Research), existing behavioural data read (Data Analyst), or account signals interpreted (Customer Success)? |
+
+The test is ownership of the decision, not topical proximity. A build-versus-buy question about a payments vendor is an architecture decision that happens to mention payments.
+
+### 7. Trivial work needs no specialist
+
+Mechanical, low-judgement changes — typo fixes, renames, comment additions, dead-code removal, dependency version bumps — go straight to implementation. Do not summon a specialist persona to justify a one-line edit; the routing overhead exceeds the work.
+
+This is a floor on *role* selection, not on care. If a trivial-looking change touches a risky path, that is a tier question for the pipeline, and the pipeline's bump-up rules handle it.
 
 ## Shared quality standards
 

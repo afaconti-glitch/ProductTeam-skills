@@ -278,7 +278,7 @@ For Medium or Large chunks, use the full structure above.
 
 ## Cache integration
 
-Read `.claude/cache/pipeline.json` (schema in `.claude/cache/README.md`) to ground the review.
+Read `<cache>/pipeline.json` (contract in [`state-schema.md`](./state-schema.md)) to ground the review.
 
 On entry:
 
@@ -289,7 +289,7 @@ On exit (do all four — none are optional):
 
 1. **Write the closure block** on the chunk: `closure: { decision: "PASS" | "PASS_WITH_NOTES" | "FAIL", at: <now>, reason: <one-line summary> }`.
 2. **Bump `chunk.status`** in the same write — `"closed"` for PASS or PASS_WITH_NOTES, `"failed"` for FAIL. The status field is what dashboards and the run-pipeline router read; leaving it at `"passed"` after a closure decision is a known bookkeeping drift that the 2026-05-03 audit had to retroactively repair across 7 chunks. Do not repeat that.
-3. **Stamp `last-gate.json` only on first-hand evidence.** If you just ran the full `pnpm lint && pnpm check && pnpm test` yourself as part of closure verification and the decision is PASS, write `.claude/cache/last-gate.json` with `{ at: <now>, scope: "full", success: true }` so the TodoWrite hook skips the redundant run for 5 minutes. Do NOT stamp `lastGate` based on evidence you only read (e.g. the chunk's prior `validation` block) — the marker must reflect a run you actually observed.
+3. **Stamp `last-gate.json` only on first-hand evidence.** If you just ran the project's full gate chain yourself as part of closure verification and the decision is PASS, write `<cache>/last-gate.json` with `{ at: <now>, scope: "full", success: true }` so downstream skills skip the redundant run within the stamp TTL. Do NOT stamp `lastGate` based on evidence you only read (for example the chunk's prior `validation` block) — the marker must reflect a run you actually observed.
 4. **Close the run** if this is the last chunk and every chunk is now `status: "closed"` (PASS or PASS_WITH_NOTES) or `status: "split"` (parent chunks decomposed into sub-chunks): set `run.status = "complete"` and `run.completedAt`.
 
 **Carry-forward rule.** If your review encountered a "pre-existing failure carried forward from a prior chunk" claim in `pipeline.json`, re-run the failing test against current HEAD before trusting it. The phantom-carry-forward pattern (cache says broken, code is actually green) has now been observed twice; trust the test runner over the cache. Any actually-still-broken test must become a `.claude/todo/` file before this chunk closes — never a "Known gaps" note in the closure reason.
